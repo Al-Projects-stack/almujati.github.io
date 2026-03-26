@@ -396,7 +396,7 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    .proj:hover { border-color: rgba(0,212,255,0.4); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.5); }
+    .proj:hover { border-color: rgba(0,212,255,0.6); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,212,255,0.15); }
     .proj:hover::after { opacity: 1; }
 
     .proj-icon {
@@ -705,6 +705,7 @@
               <div class="proj-icon" style="background:rgba(0,255,140,0.08)">💬</div>
               <h3>Simple Chat System</h3>
               <p>Back-end for a customer-business chat system embedded in a website. Focus on message persistence and real-time delivery.</p>
+              <!-- Add a link here when ready: <a class="proj-link" href="..." target="_blank">View details →</a> -->
             </article>
 
             <article class="proj">
@@ -891,6 +892,19 @@
     });
     document.addEventListener('mouseenter', () => {
       cursor.style.opacity = '1'; ring.style.opacity = '1';
+    });
+
+    /* ── ✅ Make project cards clickable ── */
+    document.querySelectorAll('.proj').forEach(card => {
+      const link = card.querySelector('.proj-link');
+      if (link && link.href) {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+          // Ignore clicks on the inner link or text selection
+          if (e.target.closest('a') || window.getSelection().toString()) return;
+          window.open(link.href, link.target || '_blank');
+        });
+      }
     });
   </script>
 </body>
