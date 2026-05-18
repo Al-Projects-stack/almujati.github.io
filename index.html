@@ -811,6 +811,23 @@
       width: 120px;
       align-items: flex-start;
     }
+    .ss-preview {
+      flex-shrink: 0;
+      width: 220px;
+      height: 148px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      align-self: center;
+      background: var(--card2);
+    }
+    .ss-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
     .ss-btn {
       position: absolute;
       top: 50%; transform: translateY(-50%);
@@ -859,6 +876,7 @@
     }
     @media (max-width: 640px) {
       .ss-tags { display: none; }
+      .ss-preview { display: none; }
       .proj-slideshow { height: 200px; }
       .ss-slide { padding: 20px 52px 44px 52px; gap: 16px; }
       .ss-icon { width: 56px; height: 56px; font-size: 1.4rem; }
@@ -1195,6 +1213,7 @@
         tech: ['Python', 'RAG', 'FastAPI', 'Claude API', 'NLP'],
         github: 'https://github.com/Al-Projects-stack/cariq',
         demo: null,
+        image: null,
         fullDesc: 'CarIQ answers natural-language questions about used cars in the South African market, grounding every response in real, sourced data. Ask "What are common faults on a 2019 VW Polo?" or "What\'s a fair price for a 120 000km Corolla?" and get accurate, cited answers.',
         problem: 'SA used car buyers lack consolidated, trustworthy data. Existing resources are fragmented across forums, classifieds, and manufacturer sites , there\'s no single intelligent interface to query them all.',
         learned: 'RAG pipeline architecture, vector database retrieval, prompt engineering for grounded generation, and preventing hallucination by constraining LLM outputs strictly to source context.',
@@ -1208,6 +1227,7 @@
         tech: ['React', 'TypeScript', 'Node.js', 'MongoDB', 'AI/ML'],
         github: 'https://github.com/Al-Projects-stack/fleet-manager',
         demo: null,
+        image: 'https://github.com/user-attachments/assets/7f76ef9e-ef72-481b-86a3-d2fc8c6fe1ef',
         fullDesc: 'An end-to-end fleet management system that ingests telematics data, predicts when vehicles are likely to need maintenance, and flags fuel consumption anomalies. Features real-time dashboards, predictive alert pipelines, and a full work-order management interface.',
         problem: 'Fleet operators typically react to failures rather than preventing them. This system shifts the model to proactive maintenance, cutting downtime and fuel costs through data-driven predictions.',
         learned: 'Telematics data schemas, lightweight predictive modelling, real-time React dashboards, and designing event-driven alert systems at scale.',
@@ -1221,6 +1241,7 @@
         tech: ['Python', 'FastAPI', 'Claude API', 'SQLAlchemy', 'Docker'],
         github: 'https://github.com/Al-Projects-stack/CV-Automation-tool',
         demo: null,
+        image: null,
         fullDesc: 'A backend service that accepts a job description and personal profile, then uses the Claude API to produce a customised CV and cover letter matched to that specific role. Includes document formatting, PDF export, and a clean REST API for integration.',
         problem: 'Tailoring a CV for each application is repetitive and time-consuming. This pipeline automates the process while preserving quality , every output is structured, relevant, and professionally formatted.',
         learned: 'Prompt engineering for structured document generation, FastAPI service design, SQLAlchemy ORM patterns, and integrating the Anthropic SDK into a production pipeline.',
@@ -1234,6 +1255,7 @@
         tech: ['Node.js', 'PostgreSQL', 'Chart.js', 'JavaScript', 'Express'],
         github: 'https://github.com/Al-Projects-stack/finance-dashboard',
         demo: null,
+        image: 'https://github.com/user-attachments/assets/81d0a922-e1b1-43e5-8697-4d5527306fa5',
         fullDesc: 'A full-stack personal finance dashboard for tracking income and expenses, forecasting budgets, and visualising spending patterns over time. All data is persisted in PostgreSQL and served through a RESTful Node.js API.',
         problem: 'Spreadsheets are clunky and don\'t surface trends visually. This dashboard gives a single, always-updated view of financial health with interactive charts and period comparisons.',
         learned: 'Chart.js for complex data visualisation, PostgreSQL query optimisation, designing RESTful APIs for time-series data, and building responsive dark-mode UIs.',
@@ -1247,6 +1269,7 @@
         tech: ['JavaScript', 'GitHub REST API', 'HTML/CSS'],
         github: 'https://github.com/Al-Projects-stack/Github-Dashboard',
         demo: null,
+        image: 'https://github.com/user-attachments/assets/471bc596-1293-4dc2-a76d-227c5188795a',
         fullDesc: 'A client-side app that queries the GitHub REST API to display repositories, language breakdowns, stars, forks, and follower activity for any public GitHub user in real time.',
         problem: 'GitHub\'s own profile page lacks at-a-glance analytics and doesn\'t compare activity across repos easily. This dashboard surfaces the most useful stats in a clean, visual layout.',
         learned: 'GitHub API authentication, handling pagination and rate limits, parsing nested JSON structures, and building dynamic DOM rendering without a framework.',
@@ -1260,6 +1283,7 @@
         tech: ['Node.js', 'Express', 'PostgreSQL', 'REST API'],
         github: 'https://github.com/Al-Projects-stack/URL-Shortner',
         demo: null,
+        image: null,
         fullDesc: 'A REST API service that generates short, unique codes for any URL and resolves them back to the original on redirect. Includes click tracking per short code with timestamps and analytics endpoints.',
         problem: 'Long URLs are unwieldy to share. This service provides a clean shortening solution with persistent storage and the analytics needed to track how links perform over time.',
         learned: 'URL encoding, collision-resistant code generation, redirect mechanics in Express, analytics schema design in PostgreSQL, and deploying a stateful REST service.',
@@ -1273,6 +1297,7 @@
         tech: ['JavaScript', 'Web Crypto API', 'HTML/CSS'],
         github: 'https://github.com/Al-Projects-stack/Password-generator',
         demo: null,
+        image: null,
         fullDesc: 'A fully client-side password generator that uses window.crypto.getRandomValues() to produce cryptographically random passwords. Supports configurable length, character sets (upper, lower, digits, symbols), and displays a real-time entropy-based strength score.',
         problem: 'Most online generators rely on Math.random(), which is predictable and unsuitable for security. This tool guarantees true randomness using the browser\'s native secure random API , no server calls, no external dependencies.',
         learned: 'The Web Cryptography API, information entropy as a password strength metric, and building configurable character set logic with clean, dependency-free vanilla JS.',
@@ -1286,6 +1311,7 @@
         tech: ['Node.js', 'WebSockets', 'MySQL', 'JavaScript'],
         github: null,
         demo: null,
+        image: 'chatsystem.jpg',
         fullDesc: 'A backend service powering a live chat widget embedded on a client\'s website. Handles real-time message delivery over WebSockets, persists conversation history in MySQL, and supports multiple concurrent sessions.',
         problem: 'The client needed a direct communication channel between visitors and their team without relying on third-party services , a controlled, embedded solution with no recurring SaaS cost.',
         learned: 'WebSocket protocol and connection lifecycle management, session handling for concurrent users, MySQL schema design for chat history, and safely integrating a real-time backend into an existing production site.',
@@ -1299,6 +1325,7 @@
         tech: ['JavaScript', 'OpenWeather API', 'Geolocation API', 'HTML/CSS'],
         github: null,
         demo: null,
+        image: 'Weather.jpg',
         fullDesc: 'A weather app that detects the user\'s location via the browser Geolocation API or accepts a manual city search, then fetches current conditions and a 5-day forecast from OpenWeatherMap.',
         problem: 'A practical project for getting hands-on with third-party REST APIs, async JavaScript, and building a clean, adaptive UI around live external data.',
         learned: 'Async/await patterns for chained API calls, the browser Geolocation API, graceful error handling for denied permissions and API failures, and structuring a UI around dynamic data.',
@@ -1312,6 +1339,7 @@
         tech: ['HTML/CSS', 'JavaScript', 'PHP'],
         github: null,
         demo: 'https://sewandgrow.co.za',
+        image: 'image_2025-10-30_123547581.png',
         fullDesc: 'Ongoing development and maintenance of a live business website. Responsibilities included new features, bug fixes, performance improvements, and content updates coordinated directly with a non-technical client.',
         problem: 'A live client site requires continuous care , features evolve, bugs appear in production, and content must stay current. This engagement demanded real production discipline: safe deployments, clear communication, and zero-downtime changes.',
         learned: 'Production deployment discipline, client-facing communication, diagnosing live-site issues under pressure, and the real difference between shipping code in a side project vs. a live business context.',
@@ -1441,6 +1469,10 @@
         const tagsHtml = p.tech.slice(0, 4).map(t => `<span class="proj-badge">${t}</span>`).join('');
         const numStr = String(i + 1).padStart(2, '0') + ' / ' + String(PROJECTS.length).padStart(2, '0');
 
+        const rightPanel = p.image
+          ? `<div class="ss-preview"><img src="${p.image}" alt="${p.name} screenshot" loading="lazy"></div>`
+          : `<div class="ss-tags">${tagsHtml}</div>`;
+
         const slide = document.createElement('div');
         slide.className = 'ss-slide' + (i === 0 ? ' ss-active' : '');
         slide.innerHTML = `
@@ -1451,7 +1483,7 @@
             <p class="ss-desc">${p.shortDesc}</p>
             ${linksHtml ? `<div class="ss-links">${linksHtml}</div>` : ''}
           </div>
-          <div class="ss-tags">${tagsHtml}</div>
+          ${rightPanel}
         `;
         track.appendChild(slide);
 
