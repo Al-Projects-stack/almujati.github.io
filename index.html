@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Al Takura Mujati — Back-end Developer</title>
-  <link rel="icon" href="favicon.png" type="image/png">
-  <meta name="description" content="Al Takura Mujati — Back-end developer. C++, C#, Java, JavaScript, TypeScript, Node.js, Python, React. Portfolio showcasing projects and contact info." />
+  <title>Al Takura Mujati — Backend and Cloud Engineer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2300d4ff'/><stop offset='1' stop-color='%235b8cff'/></linearGradient></defs><rect width='32' height='32' rx='7' fill='url(%23g)'/><text x='16' y='22' text-anchor='middle' font-family='Arial Black,sans-serif' font-weight='900' font-size='14' fill='%23060a0f'>AL</text></svg>" type="image/svg+xml">
+  <meta name="description" content="Al Takura Mujati — Backend and Cloud Engineer. C++, C#, Java, JavaScript, TypeScript, Node.js, Python, React, Docker, Azure. Portfolio showcasing projects and contact info." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
@@ -40,6 +40,7 @@
       overflow-x: hidden;
       cursor: none;
     }
+    body.modal-open { overflow: hidden; }
 
     /* ── Custom cursor ── */
     #cursor {
@@ -317,7 +318,11 @@
       display: grid;
       grid-template-columns: 1fr 320px;
       gap: 24px;
+      margin-bottom: 48px;
     }
+    .main-grid > * { min-width: 0; }
+    .main-grid > div:first-child { display: flex; flex-direction: column; gap: 24px; }
+    .main-grid > div:first-child .proj-slideshow { flex: 1; height: auto; min-height: 200px; }
 
     /* ── About ── */
     .panel {
@@ -371,60 +376,216 @@
       letter-spacing: 0.1em;
     }
 
-    /* ── Projects ── */
-    .projects-section { margin-top: 24px; }
+    /* ── Projects section (full-width showcase) ── */
+    .projects-section {
+      margin-top: 32px;
+    }
+    .projects-header {
+      margin-bottom: 32px;
+    }
     .projects-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
     }
-    .proj {
+
+    /* ── Project cards ── */
+    .proj-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 22px;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-      cursor: pointer;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.55s ease, transform 0.55s ease, border-color 0.25s, box-shadow 0.25s;
     }
-    .proj::after {
+    .proj-card::after {
       content: '';
       position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(0,212,255,0.03), transparent);
       opacity: 0;
       transition: opacity 0.3s;
+      pointer-events: none;
     }
-    .proj:hover { border-color: rgba(0,212,255,0.6); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,212,255,0.15); }
-    .proj:hover::after { opacity: 1; }
+    .proj-card.card-visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.55s ease, transform 0.3s ease, border-color 0.25s, box-shadow 0.25s;
+    }
+    .proj-card.card-visible:hover {
+      border-color: rgba(0,212,255,0.5);
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 18px 50px rgba(0,212,255,0.18);
+    }
+    .proj-card.card-visible:hover::after { opacity: 1; }
 
+    .proj-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
     .proj-icon {
-      width: 36px; height: 36px; border-radius: 9px;
+      width: 38px; height: 38px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.1rem;
-      margin-bottom: 4px;
+      flex-shrink: 0;
     }
-    .proj h3 {
+    .proj-icon-links {
+      display: flex; gap: 6px;
+    }
+    .proj-icon-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 7px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 500;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .proj-icon-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .proj-card h3 {
       font-family: var(--display);
       font-size: 1rem; font-weight: 700;
       color: #ddeef6;
       margin: 0;
+      line-height: 1.3;
     }
-    .proj p {
-      color: var(--muted); font-size: 0.88rem;
+    .proj-card p {
+      color: var(--muted); font-size: 0.87rem;
       line-height: 1.6; flex: 1;
       font-weight: 300;
     }
-    .proj-link {
+
+    .proj-badges {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: auto;
+    }
+    .proj-badge {
+      background: rgba(91,140,255,0.06);
+      border: 1px solid rgba(91,140,255,0.14);
+      color: #7aa0d4;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+    }
+
+    .proj-expand-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
       font-family: var(--mono);
       font-size: 0.8rem;
-      color: var(--accent);
-      text-decoration: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 4px;
       display: inline-flex; align-items: center; gap: 4px;
-      transition: gap 0.2s;
+      transition: gap 0.2s, opacity 0.2s;
+      align-self: flex-start;
     }
-    .proj-link:hover { gap: 8px; }
+    .proj-expand-btn:hover { gap: 8px; opacity: 0.8; }
+
+    /* ── Modal ── */
+    .proj-modal {
+      position: fixed; inset: 0;
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .proj-modal[hidden] { display: none; }
+    .proj-modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(6, 10, 15, 0.88);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      animation: fade-in 0.2s ease;
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .proj-modal-box {
+      position: relative; z-index: 1;
+      background: var(--card2);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 20px;
+      width: 100%; max-width: 640px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 36px;
+      animation: modal-slide-in 0.25s ease;
+    }
+    @keyframes modal-slide-in {
+      from { opacity: 0; transform: translateY(16px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .proj-modal-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+      border-radius: 20px 20px 0 0;
+    }
+    .proj-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .proj-modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+    .modal-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .modal-title {
+      font-family: var(--display);
+      font-size: 1.5rem; font-weight: 800;
+      color: #eaf3f8; margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .modal-badges {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 24px;
+    }
+    .modal-section-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      margin-top: 20px;
+    }
+    .modal-text {
+      color: var(--muted2);
+      font-size: 0.95rem;
+      line-height: 1.75;
+      font-weight: 300;
+    }
+    .modal-links {
+      display: flex; gap: 10px;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
 
     /* ── Right sidebar ── */
     .sidebar { display: flex; flex-direction: column; gap: 20px; }
@@ -547,18 +708,163 @@
     }
 
     /* ── Responsive ── */
+    @media (max-width: 1000px) {
+      .projects-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 860px) {
       .hero { grid-template-columns: 1fr; }
       .profile-box { flex-direction: row; flex-wrap: wrap; }
       .main-grid { grid-template-columns: 1fr; }
-      .projects-grid { grid-template-columns: 1fr; }
       .stats-row { grid-template-columns: repeat(3, 1fr); }
       nav { display: none; }
       .floating-tag { display: none; }
     }
-    @media (max-width: 460px) {
+    @media (max-width: 540px) {
+      .projects-grid { grid-template-columns: 1fr; }
       .stats-row { grid-template-columns: 1fr 1fr; }
     }
+
+    /* ── Project Slideshow ── */
+    .proj-slideshow {
+      position: relative;
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      height: 240px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+    .ss-track { position: relative; height: 100%; }
+    .ss-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 24px 60px 44px 60px;
+      opacity: 0;
+      transform: translateX(36px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .ss-slide.ss-active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+    .ss-slide.ss-exiting {
+      opacity: 0;
+      transform: translateX(-36px);
+    }
+    .ss-icon {
+      width: 80px; height: 80px;
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .ss-body { flex: 1; min-width: 0; }
+    .ss-num {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+    .ss-title {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #eaf3f8;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .ss-desc {
+      color: var(--muted2);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      font-weight: 300;
+      margin-bottom: 12px;
+      max-width: 540px;
+    }
+    .ss-links { display: flex; gap: 8px; }
+    .ss-link {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(0,212,255,0.2);
+      padding: 4px 12px;
+      border-radius: 7px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .ss-link:hover { border-color: var(--accent); background: rgba(0,212,255,0.06); }
+    .ss-tags {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      width: 120px;
+      align-items: flex-start;
+    }
+    .ss-btn {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--muted2);
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      z-index: 5;
+      line-height: 1;
+    }
+    .ss-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.05); }
+    .ss-prev { left: 12px; }
+    .ss-next { right: 12px; }
+    .ss-dots {
+      position: absolute;
+      bottom: 12px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 6px;
+      z-index: 5;
+    }
+    .ss-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: none; cursor: pointer; padding: 0;
+      transition: background 0.25s, transform 0.25s;
+    }
+    .ss-dot.ss-dot-active { background: var(--accent); transform: scale(1.4); }
+    .ss-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      animation: ss-fill 4s linear forwards;
+    }
+    @keyframes ss-fill { from { width: 0 } to { width: 100% } }
+    @media (max-width: 768px) {
+      .ss-slide { padding: 20px 44px 40px 44px; gap: 14px; }
+      .ss-tags { width: 100px; }
+      .ss-title { font-size: 1.4rem; }
+    }
+    @media (max-width: 640px) {
+      .ss-tags { display: none; }
+      .proj-slideshow { height: 200px; }
+      .ss-slide { padding: 20px 52px 44px 52px; gap: 16px; }
+      .ss-icon { width: 56px; height: 56px; font-size: 1.4rem; }
+      .ss-title { font-size: 1.15rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -583,7 +889,7 @@
         <div class="logo">AT</div>
         <div class="brand-text">
           <div class="brand-name">Al Takura Mujati</div>
-          <div class="brand-role">back-end.developer</div>
+          <div class="brand-role">backend.cloud.engineer</div>
         </div>
       </div>
       <nav aria-label="Primary">
@@ -599,12 +905,12 @@
       <div class="reveal" style="transition-delay:0.1s">
         <div class="hero-eyebrow">Available for work</div>
         <h1>
-          Back-end developer<br>
-          focused on <span class="line-accent">reliable</span><br>
+          Backend &amp; Cloud<br>
+          Engineer. <span class="line-accent">Reliable</span><br>
           systems.
         </h1>
         <p class="hero-desc">
-          I build APIs, automation pipelines and data-driven backend services. I enjoy debugging, improving performance, and shipping code that scales — cleanly.
+          I design and build backend systems, cloud infrastructure, and automation pipelines. Focused on performance, reliability, and clean architecture , from REST APIs and databases to containerised deployments on Azure.
         </p>
         <div class="hero-chips">
           <span class="chip">C++</span>
@@ -635,14 +941,14 @@
         <div class="socials">
           <a class="social-btn" href="https://www.linkedin.com/in/al-mujati-494789224" aria-label="LinkedIn" target="_blank">in</a>
           <a class="social-btn" href="mailto:almujati02@gmail.com" aria-label="Email">✉</a>
-          <a class="social-btn" href="https://github.com/sadsaxninja" aria-label="GitHub" target="_blank">gh</a>
+          <a class="social-btn" href="https://github.com/Al-Projects-stack" aria-label="GitHub" target="_blank">gh</a>
         </div>
       </aside>
     </section>
 
     <div class="glow-divider"></div>
 
-    <!-- ── Main layout ── -->
+    <!-- ── Main layout: About + Sidebar ── -->
     <div class="main-grid">
       <div>
 
@@ -651,10 +957,10 @@
           <div class="section-label">01 — About</div>
           <h2>Who I am</h2>
           <p class="about-text">
-            I'm Al — a <strong>back-end developer</strong> with a BSc in Computer Science and hands-on experience building web applications and services. I specialise in <strong>backend architecture, APIs, database design,</strong> and automation. I enjoy improving reliability and performance, and I write clean, testable code.
+            I'm Al , a <strong>Backend and Cloud Engineer</strong> with a BSc in Computer Science, specialising in <strong>backend architecture, API design, cloud deployments, and automation</strong>. I build systems that are reliable, performant, and maintainable , from database schemas and REST services to Docker containers and Azure workloads.
           </p>
           <p class="about-text" style="margin-top:12px">
-            Currently working remotely at <strong>Sewandgrow</strong> while completing my BSc Honours in Security &amp; Network Engineering at <strong>Eduvos</strong>.
+            Currently working remotely at <strong>Sewandgrow</strong> while completing my BSc Honours in Security &amp; Network Engineering at <strong>Eduvos</strong>. I care about writing clean, testable code and engineering solutions that hold up in production.
           </p>
 
           <div class="stats-row">
@@ -663,7 +969,7 @@
               <div class="stat-label">Years exp.</div>
             </div>
             <div class="stat">
-              <div class="stat-num">9+</div>
+              <div class="stat-num">10+</div>
               <div class="stat-label">Projects</div>
             </div>
             <div class="stat">
@@ -673,76 +979,14 @@
           </div>
         </section>
 
-        <!-- Projects -->
-        <section id="projects" class="projects-section reveal" style="transition-delay:0.1s">
-          <div class="section-label" style="margin-top:32px">02 — Projects</div>
-          <h2>Things I've built</h2>
-
-          <div class="projects-grid">
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(255,100,100,0.08)">🔑</div>
-              <h3>Password Generator</h3>
-              <p>Cryptographically secure password generator built entirely in the browser using the Web Cryptography API. Includes strength scoring via entropy calculation and configurable character sets.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/Password-generator" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(0,212,255,0.08)">📊</div>
-              <h3>GitHub Stats Dashboard</h3>
-              <p>Live dashboard fetching any GitHub user's public data via the GitHub REST API. Displays repos, languages, stars, forks, and follower stats in a clean interface.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/Github-Dashboard" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(91,140,255,0.08)">🔗</div>
-              <h3>URL Link Shortener</h3>
-              <p>A service that maps long URLs to short codes, handles redirects, and tracks basic analytics. Built with a backend API and persistent storage.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/URL-Shortner" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(0,255,140,0.08)">💬</div>
-              <h3>Simple Chat System</h3>
-              <p>Backend for a customer-to-business chat system embedded in a website. Focused on message persistence, delivery, and integration with a live site.</p>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(124,58,237,0.08)">🤖</div>
-              <h3>CV Automation Pipeline</h3>
-              <p>Automated backend system that generates tailored CVs and cover letters from job descriptions using Claude API, FastAPI, and dynamic document formatting.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/CV-Automation-tool" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(0,180,100,0.08)">🚛</div>
-              <h3>AI-Powered Fleet Maintenance & Fuel Optimization</h3>
-              <p>Smart fleet platform that predicts vehicle maintenance needs and detects fuel inefficiencies using telematics data and lightweight AI. Features real-time dashboards, predictive alerts, and work order management.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/fleet-manager" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(100,80,255,0.08)">💹</div>
-              <h3>Finance Dashboard</h3>
-              <p>Dark-themed finance dashboard with real-time data visualization using Chart.js. Features income/expense tracking, budget forecasting, and interactive charts powered by a Node.js/PostgreSQL backend.</p>
-              <a class="proj-link" href="https://github.com/Al-Projects-stack/finance-dashboard" target="_blank" rel="noopener">View code →</a>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(255,200,0,0.08)">🌤️</div>
-              <h3>Weather App</h3>
-              <p>Weather application providing real-time forecasts based on user location or searched cities. Displays current conditions, temperature, humidity, and multi-day forecasts via external weather APIs.</p>
-            </article>
-
-            <article class="proj">
-              <div class="proj-icon" style="background:rgba(0,212,255,0.08)">🌱</div>
-              <h3>Sewandgrow Website</h3>
-              <p>Maintained and improved a live production website for a Johannesburg-based business. Handled updates, bug fixes, and performance improvements.</p>
-              <a class="proj-link" href="https://sewandgrow.co.za" target="_blank" rel="noopener">Visit site →</a>
-            </article>
-
-          </div>
-        </section>
+        <!-- Slideshow fills remaining left-column height -->
+        <div class="proj-slideshow reveal" id="proj-slideshow">
+          <div class="ss-track" id="ss-track"></div>
+          <button class="ss-btn ss-prev" id="ss-prev" aria-label="Previous project">&#8249;</button>
+          <button class="ss-btn ss-next" id="ss-next" aria-label="Next project">&#8250;</button>
+          <div class="ss-dots" id="ss-dots"></div>
+          <div class="ss-progress" id="ss-progress"></div>
+        </div>
 
       </div>
 
@@ -806,14 +1050,23 @@
           <p style="color:var(--muted);font-size:0.82rem;margin-top:6px">Looking for roles in South Africa or fully remote.</p>
           <div class="avail-roles">
             <span class="avail-role">Web Developer</span>
-            <span class="avail-role">Back-end Dev</span>
+            <span class="avail-role">Backend &amp; Cloud Eng</span>
             <span class="avail-role">Software Dev</span>
-            <span class="avail-role">Software Tester</span>
           </div>
         </div>
 
       </aside>
+
     </div>
+
+    <!-- ── Projects Showcase (full-width) ── -->
+    <section id="projects" class="projects-section">
+      <div class="projects-header reveal">
+        <div class="section-label" style="margin-top:0">02 — Projects</div>
+        <h2>Things I've built</h2>
+      </div>
+      <div class="projects-grid" id="projects-grid"></div>
+    </section>
 
     <!-- Footer -->
     <footer class="reveal">
@@ -821,6 +1074,15 @@
       <div style="color:var(--muted)">Hosted on GitHub Pages · Jhb 🇿🇦</div>
     </footer>
 
+  </div>
+
+  <!-- ── Project Modal ── -->
+  <div id="proj-modal" class="proj-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="proj-modal-backdrop"></div>
+    <div class="proj-modal-box">
+      <button class="proj-modal-close" aria-label="Close modal">✕</button>
+      <div id="modal-body" class="proj-modal-body"></div>
+    </div>
   </div>
 
   <script>
@@ -868,7 +1130,6 @@
 
     function drawParticles() {
       ctx.clearRect(0, 0, W, H);
-      // connections
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -884,7 +1145,6 @@
           }
         }
       }
-      // dots
       particles.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -898,14 +1158,14 @@
     }
     drawParticles();
 
-    /* ── Scroll reveal ── */
+    /* ── Scroll reveal (existing elements) ── */
     const reveals = document.querySelectorAll('.reveal');
-    const io = new IntersectionObserver((entries) => {
+    const revealIO = new IntersectionObserver((entries) => {
       entries.forEach(e => {
-        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealIO.unobserve(e.target); }
       });
     }, { threshold: 0.1 });
-    reveals.forEach(el => io.observe(el));
+    reveals.forEach(el => revealIO.observe(el));
 
     /* ── Smooth scroll ── */
     document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -924,16 +1184,329 @@
       cursor.style.opacity = '1'; ring.style.opacity = '1';
     });
 
-    /* ── ✅ Make project cards clickable ── */
-    document.querySelectorAll('.proj').forEach(card => {
-      const link = card.querySelector('.proj-link');
-      if (link && link.href) {
-        card.style.cursor = 'pointer';
-        card.addEventListener('click', (e) => {
-          // Ignore clicks on the inner link or text selection
-          if (e.target.closest('a') || window.getSelection().toString()) return;
-          window.open(link.href, link.target || '_blank');
-        });
+    /* ── Project data ── */
+    const PROJECTS = [
+      {
+        id: 'cariq',
+        icon: '🚗',
+        iconBg: 'rgba(0,212,255,0.08)',
+        name: 'CarIQ',
+        shortDesc: 'RAG-powered intelligence platform for the South African used car market , ask about pricing, faults, and reliability.',
+        tech: ['Python', 'RAG', 'FastAPI', 'Claude API', 'NLP'],
+        github: 'https://github.com/Al-Projects-stack/cariq',
+        demo: null,
+        fullDesc: 'CarIQ answers natural-language questions about used cars in the South African market, grounding every response in real, sourced data. Ask "What are common faults on a 2019 VW Polo?" or "What\'s a fair price for a 120 000km Corolla?" and get accurate, cited answers.',
+        problem: 'SA used car buyers lack consolidated, trustworthy data. Existing resources are fragmented across forums, classifieds, and manufacturer sites , there\'s no single intelligent interface to query them all.',
+        learned: 'RAG pipeline architecture, vector database retrieval, prompt engineering for grounded generation, and preventing hallucination by constraining LLM outputs strictly to source context.',
+      },
+      {
+        id: 'fleet',
+        icon: '🚛',
+        iconBg: 'rgba(0,180,100,0.08)',
+        name: 'AI Fleet Manager',
+        shortDesc: 'Smart fleet platform predicting vehicle maintenance needs and fuel inefficiencies using telematics data and AI.',
+        tech: ['React', 'TypeScript', 'Node.js', 'MongoDB', 'AI/ML'],
+        github: 'https://github.com/Al-Projects-stack/fleet-manager',
+        demo: null,
+        fullDesc: 'An end-to-end fleet management system that ingests telematics data, predicts when vehicles are likely to need maintenance, and flags fuel consumption anomalies. Features real-time dashboards, predictive alert pipelines, and a full work-order management interface.',
+        problem: 'Fleet operators typically react to failures rather than preventing them. This system shifts the model to proactive maintenance, cutting downtime and fuel costs through data-driven predictions.',
+        learned: 'Telematics data schemas, lightweight predictive modelling, real-time React dashboards, and designing event-driven alert systems at scale.',
+      },
+      {
+        id: 'cv-automation',
+        icon: '🤖',
+        iconBg: 'rgba(124,58,237,0.08)',
+        name: 'CV Automation Pipeline',
+        shortDesc: 'Automated backend that generates tailored CVs and cover letters from job descriptions using the Claude API.',
+        tech: ['Python', 'FastAPI', 'Claude API', 'SQLAlchemy', 'Docker'],
+        github: 'https://github.com/Al-Projects-stack/CV-Automation-tool',
+        demo: null,
+        fullDesc: 'A backend service that accepts a job description and personal profile, then uses the Claude API to produce a customised CV and cover letter matched to that specific role. Includes document formatting, PDF export, and a clean REST API for integration.',
+        problem: 'Tailoring a CV for each application is repetitive and time-consuming. This pipeline automates the process while preserving quality , every output is structured, relevant, and professionally formatted.',
+        learned: 'Prompt engineering for structured document generation, FastAPI service design, SQLAlchemy ORM patterns, and integrating the Anthropic SDK into a production pipeline.',
+      },
+      {
+        id: 'finance',
+        icon: '💹',
+        iconBg: 'rgba(100,80,255,0.08)',
+        name: 'Finance Dashboard',
+        shortDesc: 'Dark-themed finance tracker with real-time Chart.js visualisations, budget forecasting, and a Node/PostgreSQL backend.',
+        tech: ['Node.js', 'PostgreSQL', 'Chart.js', 'JavaScript', 'Express'],
+        github: 'https://github.com/Al-Projects-stack/finance-dashboard',
+        demo: null,
+        fullDesc: 'A full-stack personal finance dashboard for tracking income and expenses, forecasting budgets, and visualising spending patterns over time. All data is persisted in PostgreSQL and served through a RESTful Node.js API.',
+        problem: 'Spreadsheets are clunky and don\'t surface trends visually. This dashboard gives a single, always-updated view of financial health with interactive charts and period comparisons.',
+        learned: 'Chart.js for complex data visualisation, PostgreSQL query optimisation, designing RESTful APIs for time-series data, and building responsive dark-mode UIs.',
+      },
+      {
+        id: 'github-dash',
+        icon: '📊',
+        iconBg: 'rgba(0,212,255,0.08)',
+        name: 'GitHub Stats Dashboard',
+        shortDesc: 'Live dashboard fetching any GitHub user\'s public data via the REST API and rendering it as an interactive profile.',
+        tech: ['JavaScript', 'GitHub REST API', 'HTML/CSS'],
+        github: 'https://github.com/Al-Projects-stack/Github-Dashboard',
+        demo: null,
+        fullDesc: 'A client-side app that queries the GitHub REST API to display repositories, language breakdowns, stars, forks, and follower activity for any public GitHub user in real time.',
+        problem: 'GitHub\'s own profile page lacks at-a-glance analytics and doesn\'t compare activity across repos easily. This dashboard surfaces the most useful stats in a clean, visual layout.',
+        learned: 'GitHub API authentication, handling pagination and rate limits, parsing nested JSON structures, and building dynamic DOM rendering without a framework.',
+      },
+      {
+        id: 'url-shortener',
+        icon: '🔗',
+        iconBg: 'rgba(91,140,255,0.08)',
+        name: 'URL Shortener',
+        shortDesc: 'A backend service that maps long URLs to short codes, handles redirects, and tracks basic click analytics.',
+        tech: ['Node.js', 'Express', 'PostgreSQL', 'REST API'],
+        github: 'https://github.com/Al-Projects-stack/URL-Shortner',
+        demo: null,
+        fullDesc: 'A REST API service that generates short, unique codes for any URL and resolves them back to the original on redirect. Includes click tracking per short code with timestamps and analytics endpoints.',
+        problem: 'Long URLs are unwieldy to share. This service provides a clean shortening solution with persistent storage and the analytics needed to track how links perform over time.',
+        learned: 'URL encoding, collision-resistant code generation, redirect mechanics in Express, analytics schema design in PostgreSQL, and deploying a stateful REST service.',
+      },
+      {
+        id: 'password-gen',
+        icon: '🔑',
+        iconBg: 'rgba(255,100,100,0.08)',
+        name: 'Password Generator',
+        shortDesc: 'Cryptographically secure password generator built in the browser using the Web Crypto API with entropy-based strength scoring.',
+        tech: ['JavaScript', 'Web Crypto API', 'HTML/CSS'],
+        github: 'https://github.com/Al-Projects-stack/Password-generator',
+        demo: null,
+        fullDesc: 'A fully client-side password generator that uses window.crypto.getRandomValues() to produce cryptographically random passwords. Supports configurable length, character sets (upper, lower, digits, symbols), and displays a real-time entropy-based strength score.',
+        problem: 'Most online generators rely on Math.random(), which is predictable and unsuitable for security. This tool guarantees true randomness using the browser\'s native secure random API , no server calls, no external dependencies.',
+        learned: 'The Web Cryptography API, information entropy as a password strength metric, and building configurable character set logic with clean, dependency-free vanilla JS.',
+      },
+      {
+        id: 'chat',
+        icon: '💬',
+        iconBg: 'rgba(0,255,140,0.08)',
+        name: 'Chat System',
+        shortDesc: 'Backend for a real-time customer-to-business chat system embedded directly into a live production website.',
+        tech: ['Node.js', 'WebSockets', 'MySQL', 'JavaScript'],
+        github: null,
+        demo: null,
+        fullDesc: 'A backend service powering a live chat widget embedded on a client\'s website. Handles real-time message delivery over WebSockets, persists conversation history in MySQL, and supports multiple concurrent sessions.',
+        problem: 'The client needed a direct communication channel between visitors and their team without relying on third-party services , a controlled, embedded solution with no recurring SaaS cost.',
+        learned: 'WebSocket protocol and connection lifecycle management, session handling for concurrent users, MySQL schema design for chat history, and safely integrating a real-time backend into an existing production site.',
+      },
+      {
+        id: 'weather',
+        icon: '🌤️',
+        iconBg: 'rgba(255,200,0,0.08)',
+        name: 'Weather App',
+        shortDesc: 'Real-time weather forecasts by geolocation or city search, showing current conditions and a multi-day outlook.',
+        tech: ['JavaScript', 'OpenWeather API', 'Geolocation API', 'HTML/CSS'],
+        github: null,
+        demo: null,
+        fullDesc: 'A weather app that detects the user\'s location via the browser Geolocation API or accepts a manual city search, then fetches current conditions and a 5-day forecast from OpenWeatherMap.',
+        problem: 'A practical project for getting hands-on with third-party REST APIs, async JavaScript, and building a clean, adaptive UI around live external data.',
+        learned: 'Async/await patterns for chained API calls, the browser Geolocation API, graceful error handling for denied permissions and API failures, and structuring a UI around dynamic data.',
+      },
+      {
+        id: 'sewandgrow',
+        icon: '🌱',
+        iconBg: 'rgba(0,212,255,0.08)',
+        name: 'Sewandgrow Website',
+        shortDesc: 'Live production website for a Johannesburg-based business , maintained and improved under an ongoing client contract.',
+        tech: ['HTML/CSS', 'JavaScript', 'PHP'],
+        github: null,
+        demo: 'https://sewandgrow.co.za',
+        fullDesc: 'Ongoing development and maintenance of a live business website. Responsibilities included new features, bug fixes, performance improvements, and content updates coordinated directly with a non-technical client.',
+        problem: 'A live client site requires continuous care , features evolve, bugs appear in production, and content must stay current. This engagement demanded real production discipline: safe deployments, clear communication, and zero-downtime changes.',
+        learned: 'Production deployment discipline, client-facing communication, diagnosing live-site issues under pressure, and the real difference between shipping code in a side project vs. a live business context.',
+      },
+    ];
+
+    /* ── Render project cards ── */
+    function renderCards() {
+      const grid = document.getElementById('projects-grid');
+      PROJECTS.forEach((p, i) => {
+        const col = i % 3;
+        const delay = col * 0.08;
+
+        const githubLink = p.github
+          ? `<a class="proj-icon-link" href="${p.github}" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub repo" onclick="event.stopPropagation()">gh</a>`
+          : '';
+        const demoLink = p.demo
+          ? `<a class="proj-icon-link" href="${p.demo}" target="_blank" rel="noopener" title="Live demo" aria-label="Live demo" onclick="event.stopPropagation()">↗</a>`
+          : '';
+
+        const badges = p.tech.map(t => `<span class="proj-badge">${t}</span>`).join('');
+
+        const card = document.createElement('article');
+        card.className = 'proj-card';
+        card.style.transitionDelay = `${delay}s`;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `View details for ${p.name}`);
+        card.dataset.id = p.id;
+
+        card.innerHTML = `
+          <div class="proj-card-header">
+            <div class="proj-icon" style="background:${p.iconBg}">${p.icon}</div>
+            <div class="proj-icon-links">${githubLink}${demoLink}</div>
+          </div>
+          <h3>${p.name}</h3>
+          <p>${p.shortDesc}</p>
+          <div class="proj-badges">${badges}</div>
+          <button class="proj-expand-btn" tabindex="-1" aria-hidden="true">View details →</button>
+        `;
+
+        card.addEventListener('click', () => openModal(p.id));
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(p.id); } });
+
+        grid.appendChild(card);
+      });
+    }
+    renderCards();
+
+    /* ── Card scroll-in animation ── */
+    const cardIO = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('card-visible');
+          cardIO.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.proj-card').forEach(c => cardIO.observe(c));
+
+    /* ── Modal ── */
+    const modal = document.getElementById('proj-modal');
+    const modalBody = document.getElementById('modal-body');
+    let lastFocused = null;
+
+    function openModal(id) {
+      const p = PROJECTS.find(x => x.id === id);
+      if (!p) return;
+      lastFocused = document.activeElement;
+
+      const githubBtn = p.github
+        ? `<a class="btn-primary" href="${p.github}" target="_blank" rel="noopener" style="font-size:0.85rem;padding:10px 18px;">GitHub repo ↗</a>`
+        : '';
+      const demoBtn = p.demo
+        ? `<a class="btn-outline" href="${p.demo}" target="_blank" rel="noopener" style="font-size:0.85rem;padding:10px 18px;">Live demo ↗</a>`
+        : '';
+
+      const badges = p.tech.map(t => `<span class="proj-badge">${t}</span>`).join('');
+
+      modalBody.innerHTML = `
+        <div class="modal-icon" style="background:${p.iconBg}">${p.icon}</div>
+        <div class="modal-title" id="modal-title">${p.name}</div>
+        <div class="modal-badges">${badges}</div>
+        <div class="modal-section-label">What it does</div>
+        <p class="modal-text">${p.fullDesc}</p>
+        <div class="modal-section-label">Problem it solves</div>
+        <p class="modal-text">${p.problem}</p>
+        <div class="modal-section-label">What I learned</div>
+        <p class="modal-text">${p.learned}</p>
+        ${(githubBtn || demoBtn) ? `<div class="modal-links">${githubBtn}${demoBtn}</div>` : ''}
+      `;
+
+      modal.removeAttribute('hidden');
+      document.body.classList.add('modal-open');
+      modal.querySelector('.proj-modal-close').focus();
+    }
+
+    function closeModal() {
+      modal.setAttribute('hidden', '');
+      document.body.classList.remove('modal-open');
+      if (lastFocused) lastFocused.focus();
+    }
+
+    modal.querySelector('.proj-modal-close').addEventListener('click', closeModal);
+    modal.querySelector('.proj-modal-backdrop').addEventListener('click', closeModal);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal(); });
+
+    /* ── Project Slideshow ── */
+    (function() {
+      const track = document.getElementById('ss-track');
+      const dotsContainer = document.getElementById('ss-dots');
+      let progressEl = document.getElementById('ss-progress');
+      const prevBtn = document.getElementById('ss-prev');
+      const nextBtn = document.getElementById('ss-next');
+      const slideshow = document.getElementById('proj-slideshow');
+
+      let current = 0;
+      let timer = null;
+      const INTERVAL = 4000;
+
+      PROJECTS.forEach((p, i) => {
+        const linksHtml = [
+          p.github ? `<a class="ss-link" href="${p.github}" target="_blank" rel="noopener">GitHub ↗</a>` : '',
+          p.demo   ? `<a class="ss-link" href="${p.demo}"   target="_blank" rel="noopener">Live demo ↗</a>` : '',
+        ].join('');
+
+        const tagsHtml = p.tech.slice(0, 4).map(t => `<span class="proj-badge">${t}</span>`).join('');
+        const numStr = String(i + 1).padStart(2, '0') + ' / ' + String(PROJECTS.length).padStart(2, '0');
+
+        const slide = document.createElement('div');
+        slide.className = 'ss-slide' + (i === 0 ? ' ss-active' : '');
+        slide.innerHTML = `
+          <div class="ss-icon" style="background:${p.iconBg}">${p.icon}</div>
+          <div class="ss-body">
+            <div class="ss-num">${numStr}</div>
+            <div class="ss-title">${p.name}</div>
+            <p class="ss-desc">${p.shortDesc}</p>
+            ${linksHtml ? `<div class="ss-links">${linksHtml}</div>` : ''}
+          </div>
+          <div class="ss-tags">${tagsHtml}</div>
+        `;
+        track.appendChild(slide);
+
+        const dot = document.createElement('button');
+        dot.className = 'ss-dot' + (i === 0 ? ' ss-dot-active' : '');
+        dot.setAttribute('aria-label', `Go to ${p.name}`);
+        dot.addEventListener('click', () => goTo(i));
+        dotsContainer.appendChild(dot);
+      });
+
+      const slides = track.querySelectorAll('.ss-slide');
+      const dots   = dotsContainer.querySelectorAll('.ss-dot');
+
+      function goTo(idx) {
+        if (idx === current) return;
+        slides[current].classList.remove('ss-active');
+        slides[current].classList.add('ss-exiting');
+        dots[current].classList.remove('ss-dot-active');
+        const old = current;
+        current = ((idx % PROJECTS.length) + PROJECTS.length) % PROJECTS.length;
+        setTimeout(() => slides[old].classList.remove('ss-exiting'), 420);
+        slides[current].classList.add('ss-active');
+        dots[current].classList.add('ss-dot-active');
+        restartProgress();
+      }
+
+      function goNext() { goTo(current + 1); }
+      function goPrev() { goTo(current - 1); }
+
+      function startTimer() { clearInterval(timer); timer = setInterval(goNext, INTERVAL); }
+
+      function restartProgress() {
+        progressEl.className = '';
+        progressEl.offsetWidth;
+        progressEl.className = 'ss-progress';
+      }
+
+      nextBtn.addEventListener('click', () => { goNext(); startTimer(); });
+      prevBtn.addEventListener('click', () => { goPrev(); startTimer(); });
+      slideshow.addEventListener('mouseenter', () => clearInterval(timer));
+      slideshow.addEventListener('mouseleave', startTimer);
+
+      startTimer();
+    })();
+
+    /* ── Focus trap inside modal ── */
+    modal.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const focusable = modal.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])');
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     });
   </script>
