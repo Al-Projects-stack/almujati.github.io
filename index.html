@@ -1204,6 +1204,144 @@
     #scroll-top.visible { opacity: 1; transform: translateY(0); }
     #scroll-top:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 16px rgba(0,212,255,0.25); }
 
+    /* ── CV download button ── */
+    .btn-cv {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid rgba(0,212,255,0.35);
+      color: var(--accent);
+      padding: 12px 24px; border-radius: 10px;
+      text-decoration: none; font-size: 0.9rem;
+      font-family: var(--mono);
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+      background: rgba(0,212,255,0.04);
+    }
+    .btn-cv:hover { border-color: var(--accent); background: rgba(0,212,255,0.1); transform: translateY(-2px); }
+
+    /* ── Experience timeline ── */
+    .exp-timeline { margin-top: 20px; }
+    .exp-item {
+      display: grid; grid-template-columns: 40px 10px 1fr;
+      gap: 0 12px; align-items: start;
+      margin-bottom: 10px; position: relative;
+    }
+    .exp-item:not(:last-child)::after {
+      content: ''; position: absolute;
+      left: 45px; top: 14px; bottom: -10px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba(91,140,255,0.4), transparent);
+    }
+    .exp-year { font-family: var(--mono); font-size: 0.66rem; color: var(--accent); text-align: right; padding-top: 1px; }
+    .exp-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent-2); border: 2px solid var(--card2);
+      margin-top: 2px; position: relative; z-index: 1;
+      box-shadow: 0 0 8px rgba(91,140,255,0.5);
+    }
+    .exp-title { font-size: 0.83rem; color: #c8dfe9; font-weight: 400; line-height: 1.3; }
+    .exp-org { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+
+    /* ── Currently learning ── */
+    .learning-row { margin-top: 16px; }
+    .learning-label {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.14em;
+      margin-bottom: 8px;
+    }
+    .learning-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .learning-tag {
+      background: rgba(168,85,247,0.07);
+      border: 1px solid rgba(168,85,247,0.2);
+      color: #c084fc; font-family: var(--mono); font-size: 0.7rem;
+      padding: 3px 10px; border-radius: 999px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .learning-tag::before { content: '↗'; font-size: 0.65rem; opacity: 0.7; }
+
+    /* ── GitHub live stats ── */
+    .gh-live-row {
+      display: flex; gap: 20px; margin-top: 16px;
+      padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    .gh-live-stat { display: flex; flex-direction: column; gap: 2px; }
+    .gh-live-num { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; color: var(--accent-2); }
+    .gh-live-label { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ── Project status badge ── */
+    .proj-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 0.67rem;
+      padding: 2px 8px; border-radius: 999px; align-self: flex-start;
+      margin-top: 2px;
+    }
+    .proj-status.live     { background: rgba(0,255,140,0.07); color: #5dffa0; border: 1px solid rgba(0,255,140,0.18); }
+    .proj-status.active   { background: rgba(0,212,255,0.06); color: var(--accent); border: 1px solid rgba(0,212,255,0.18); }
+    .proj-status.complete { background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid var(--border); }
+    .proj-status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    .proj-status.live .proj-status-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+    /* ── Work preferences in avail panel ── */
+    .work-prefs { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+    .work-pref-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--mono); font-size: 0.72rem;
+    }
+    .work-pref-key { color: var(--muted); }
+    .work-pref-val { color: var(--muted2); }
+
+    /* ── Sticky nav share button ── */
+    .nav-share-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 4px 10px; border-radius: 7px;
+      font-family: var(--mono); font-size: 0.75rem; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s; margin-left: 8px;
+    }
+    .nav-share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Keyboard shortcut hint ── */
+    .kb-hint {
+      position: fixed; bottom: 28px; left: 28px;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px;
+      font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
+      z-index: 100; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .kb-hint.visible { opacity: 1; }
+    .kb-key {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 4px; padding: 1px 5px;
+      font-size: 0.65rem; color: var(--muted2);
+    }
+    @media (max-width: 860px) { .kb-hint { display: none; } }
+
+    /* ── Print styles ── */
+    @media print {
+      #page-loader, #nav-sticky, .floating-tag, #scroll-top, #toast,
+      .orb, .bg-grid, #bg-canvas, body::before,
+      #cursor, #cursor-ring, .c-trail,
+      .glow-divider, .proj-modal, .proj-filters,
+      .proj-expand-btn, .proj-icon-links, .kb-hint,
+      .hero-chips, .hero-ctas .btn-outline, .ss-btn,
+      nav, .card-ripple { display: none !important; }
+      body { background: #fff; color: #111; cursor: default; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .container { max-width: 100%; padding: 20px; }
+      h1 { color: #111; font-size: 2rem; }
+      h1 .line-accent { -webkit-text-fill-color: #0077a8; background: none; color: #0077a8; }
+      .hero { grid-template-columns: 1fr 180px; }
+      .avatar { border-radius: 8px; }
+      .avatar-wrap::before { display: none; }
+      .panel, .stat, .stack-item { background: #f5f5f5; border-color: #ddd; color: #333; }
+      .about-text, .stat-label, .stack-item { color: #444; }
+      .stat-num { color: #0077a8; }
+      .proj-card { background: #f5f5f5; border-color: #ddd; break-inside: avoid; }
+      .proj-card h3 { color: #111; }
+      .proj-card p { color: #555; }
+      .projects-grid { grid-template-columns: repeat(2, 1fr); }
+      a[href]::after { content: " (" attr(href) ")"; font-size: 0.7rem; color: #888; }
+      .btn-primary, .btn-cv { background: #0077a8; color: #fff; border-color: #0077a8; }
+    }
+
     /* ── Modal image banner ── */
     .modal-img-banner {
       margin: -36px -36px 24px;
@@ -1249,6 +1387,7 @@
       <a class="nav-sticky-link" href="#projects" data-sec="projects">Projects</a>
       <a class="nav-sticky-link" href="#stack" data-sec="stack">Stack</a>
       <a class="nav-sticky-link" href="#contact" data-sec="contact">Contact</a>
+      <button class="nav-share-btn" id="nav-share" title="Share portfolio" aria-label="Share">⎘ Share</button>
     </div>
   </nav>
 
@@ -1267,7 +1406,13 @@
   <!-- Particle canvas -->
   <canvas id="bg-canvas"></canvas>
 
-  <div id="toast">✓ Email copied to clipboard</div>
+  <div id="toast"></div>
+  <div class="kb-hint" id="kb-hint">
+    <span class="kb-key">G</span>GitHub
+    <span class="kb-key">L</span>LinkedIn
+    <span class="kb-key">P</span>Projects
+    <span class="kb-key">?</span>Shortcuts
+  </div>
   <button id="scroll-top" aria-label="Scroll to top">↑</button>
 
   <div class="floating-tag">
@@ -1320,6 +1465,7 @@
         </div>
         <div class="hero-ctas">
           <a class="btn-primary" href="#projects">View projects ↗</a>
+          <a class="btn-cv" id="cv-btn" href="https://www.linkedin.com/in/al-mujati-494789224" target="_blank" rel="noopener">↓ Download CV</a>
           <a class="btn-outline" href="https://www.linkedin.com/in/al-mujati-494789224" target="_blank">LinkedIn</a>
         </div>
       </div>
@@ -1357,6 +1503,34 @@
             Currently working remotely at <strong>Sewandgrow</strong> while completing my BSc Honours in Security &amp; Network Engineering at <strong>Eduvos</strong>. I care about writing clean, testable code and engineering solutions that hold up in production.
           </p>
 
+          <div class="exp-timeline">
+            <div class="exp-item">
+              <div class="exp-year">2025</div>
+              <div class="exp-dot"></div>
+              <div><div class="exp-title">BSc Honours — Security &amp; Network Engineering</div><div class="exp-org">Eduvos</div></div>
+            </div>
+            <div class="exp-item">
+              <div class="exp-year">2024</div>
+              <div class="exp-dot"></div>
+              <div><div class="exp-title">Remote Developer</div><div class="exp-org">Sewandgrow · Johannesburg</div></div>
+            </div>
+            <div class="exp-item">
+              <div class="exp-year">2022</div>
+              <div class="exp-dot"></div>
+              <div><div class="exp-title">BSc Computer Science</div><div class="exp-org">Eduvos</div></div>
+            </div>
+          </div>
+
+          <div class="learning-row">
+            <div class="learning-label">Currently exploring</div>
+            <div class="learning-tags">
+              <span class="learning-tag">Kubernetes</span>
+              <span class="learning-tag">Terraform</span>
+              <span class="learning-tag">LangChain</span>
+              <span class="learning-tag">Vector DBs</span>
+            </div>
+          </div>
+
           <div class="stats-row">
             <div class="stat">
               <div class="stat-num" data-target="2" data-suffix="+">2+</div>
@@ -1370,6 +1544,12 @@
               <div class="stat-num" data-target="15" data-suffix="+">15+</div>
               <div class="stat-label">Technologies</div>
             </div>
+          </div>
+
+          <div class="gh-live-row">
+            <div class="gh-live-stat"><span class="gh-live-num" id="gh-repos">—</span><span class="gh-live-label">GitHub repos</span></div>
+            <div class="gh-live-stat"><span class="gh-live-num" id="gh-stars">—</span><span class="gh-live-label">Total stars</span></div>
+            <div class="gh-live-stat"><span class="gh-live-num" id="gh-followers">—</span><span class="gh-live-label">Followers</span></div>
           </div>
         </section>
 
@@ -1459,14 +1639,19 @@
         <div class="avail-panel reveal" style="transition-delay:0.25s">
           <div class="status-badge" style="display:inline-flex;margin-bottom:12px">
             <span class="status-dot"></span>
-            Available
+            Available now
           </div>
           <div class="avail-title">Open to the right opportunity</div>
-          <p style="color:var(--muted);font-size:0.82rem;margin-top:6px">Looking for roles in South Africa or fully remote.</p>
-          <div class="avail-roles">
+          <div class="avail-roles" style="margin-top:10px">
             <span class="avail-role">Web Developer</span>
             <span class="avail-role">Backend &amp; Cloud Eng</span>
             <span class="avail-role">Software Dev</span>
+          </div>
+          <div class="work-prefs">
+            <div class="work-pref-row"><span class="work-pref-key">Preference</span><span class="work-pref-val">Remote / Hybrid</span></div>
+            <div class="work-pref-row"><span class="work-pref-key">Type</span><span class="work-pref-val">Full-time · Contract</span></div>
+            <div class="work-pref-row"><span class="work-pref-key">Timezone</span><span class="work-pref-val">SAST (UTC+2)</span></div>
+            <div class="work-pref-row"><span class="work-pref-key">Response</span><span class="work-pref-val">Within 24 hrs</span></div>
           </div>
         </div>
 
@@ -1779,6 +1964,10 @@
 
         const badges = p.tech.map(t => `<span class="proj-badge">${t}</span>`).join('');
 
+        const STATUS_MAP = { cariq:'active', chat:'live', sewandgrow:'live' };
+        const statusClass = STATUS_MAP[p.id] || 'complete';
+        const statusLabel = { live:'Live', active:'Active', complete:'Complete' }[statusClass];
+
         const card = document.createElement('article');
         card.className = 'proj-card';
         card.style.transitionDelay = `${delay}s`;
@@ -1799,7 +1988,10 @@
           <h3>${p.name}</h3>
           <p>${p.shortDesc}</p>
           <div class="proj-badges">${badges}</div>
-          <button class="proj-expand-btn" tabindex="-1" aria-hidden="true">View details →</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+            <button class="proj-expand-btn" tabindex="-1" aria-hidden="true">View details →</button>
+            <span class="proj-status ${statusClass}"><span class="proj-status-dot"></span>${statusLabel}</span>
+          </div>
         `;
 
         card.addEventListener('click', e => {
@@ -2088,6 +2280,56 @@
       btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
 
+    /* ── GitHub live stats ── */
+    (async () => {
+      try {
+        const u = await fetch('https://api.github.com/users/Al-Projects-stack').then(r => r.json());
+        const set = (id, v) => { const e = document.getElementById(id); if (e && v !== undefined) e.textContent = v; };
+        set('gh-repos', u.public_repos);
+        set('gh-followers', u.followers);
+        const repos = await fetch('https://api.github.com/users/Al-Projects-stack/repos?per_page=100').then(r => r.json());
+        if (Array.isArray(repos)) set('gh-stars', repos.reduce((s, r) => s + (r.stargazers_count || 0), 0));
+      } catch {}
+    })();
+
+    /* ── Share portfolio ── */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2400);
+    }
+    document.getElementById('nav-share').addEventListener('click', async () => {
+      const url = location.href;
+      try {
+        if (navigator.share) { await navigator.share({ title: 'Al Takura Mujati — Portfolio', url }); return; }
+      } catch {}
+      await navigator.clipboard.writeText(url);
+      showToast('✓ Portfolio link copied');
+    });
+
+    /* ── Keyboard shortcuts ── */
+    const kbHint = document.getElementById('kb-hint');
+    let kbTimer;
+    document.addEventListener('keydown', e => {
+      if (modal && !modal.hasAttribute('hidden')) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const k = e.key.toUpperCase();
+      if (k === 'G') { window.open('https://github.com/Al-Projects-stack', '_blank'); return; }
+      if (k === 'L') { window.open('https://www.linkedin.com/in/al-mujati-494789224', '_blank'); return; }
+      if (k === 'E') { window.open('mailto:almujati02@gmail.com'); return; }
+      if (k === 'P') { document.getElementById('projects')?.scrollIntoView({ behavior:'smooth' }); return; }
+      if (k === '?') { kbHint.classList.toggle('visible'); clearTimeout(kbTimer); if (kbHint.classList.contains('visible')) kbTimer = setTimeout(() => kbHint.classList.remove('visible'), 4000); }
+    });
+
+    /* ── Update copy-email toast to use showToast ── */
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.onclick = e => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(btn.dataset.copy).then(() => showToast('✓ Email copied'));
+      };
+    });
+
     /* ── Project filter ── */
     const AI_TAGS = new Set(['RAG','AI/ML','Claude API','NLP']);
     document.getElementById('proj-filters').addEventListener('click', e => {
@@ -2109,17 +2351,7 @@
       });
     });
 
-    /* ── Copy email + toast ── */
-    document.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        navigator.clipboard.writeText(btn.dataset.copy).then(() => {
-          const t = document.getElementById('toast');
-          t.classList.add('show');
-          setTimeout(() => t.classList.remove('show'), 2200);
-        });
-      });
-    });
+    /* ── Copy email (handled above after showToast is defined) ── */
 
     /* ── Scroll to top ── */
     const scrollTopBtn = document.getElementById('scroll-top');
