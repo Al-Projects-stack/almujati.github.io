@@ -1110,6 +1110,119 @@
       border-bottom: 1px solid var(--border);
     }
 
+    /* ── Animated gradient on typewriter word ── */
+    h1 .line-accent {
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 40%, #a855f7 70%, var(--accent) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: grad-shift 3s linear infinite;
+    }
+    @keyframes grad-shift { to { background-position: 200% center; } }
+
+    /* ── Text selection ── */
+    ::selection { background: rgba(0,212,255,0.22); color: #fff; }
+
+    /* ── Platform social colours ── */
+    .social-btn[aria-label="LinkedIn"]:hover { border-color: #0e76a8; color: #0e76a8; box-shadow: 0 0 18px rgba(14,118,168,0.35); }
+    .social-btn[aria-label="Email"]:hover    { border-color: #ff6b6b; color: #ff6b6b; box-shadow: 0 0 18px rgba(255,107,107,0.3); }
+    .social-btn[aria-label="GitHub"]:hover   { border-color: #c9d1d9; color: #c9d1d9; box-shadow: 0 0 16px rgba(201,209,217,0.2); }
+
+    /* ── Project filter bar ── */
+    .proj-filters {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 28px;
+    }
+    .proj-filter {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px; border-radius: 999px;
+      font-family: var(--mono); font-size: 0.75rem; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .proj-filter:hover { border-color: var(--muted2); color: var(--muted2); transform: translateY(-1px); }
+    .proj-filter.active {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(0,212,255,0.07);
+    }
+
+    /* ── Card number watermark ── */
+    .proj-card-num {
+      position: absolute; bottom: 12px; right: 16px;
+      font-family: var(--display); font-size: 3.2rem; font-weight: 800;
+      color: rgba(255,255,255,0.03); line-height: 1;
+      pointer-events: none; user-select: none; z-index: 0;
+      transition: color 0.35s;
+    }
+    .proj-card.card-visible:hover .proj-card-num { color: rgba(0,212,255,0.07); }
+
+    /* ── Ripple click on cards ── */
+    .card-ripple {
+      position: absolute; border-radius: 50%;
+      width: 4px; height: 4px;
+      background: rgba(0,212,255,0.2);
+      transform: translate(-50%,-50%) scale(0);
+      animation: card-ripple 0.65s ease-out forwards;
+      pointer-events: none; z-index: 20;
+    }
+    @keyframes card-ripple { to { transform: translate(-50%,-50%) scale(80); opacity: 0; } }
+
+    /* ── Copy button ── */
+    .copy-btn {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); padding: 2px 7px; border-radius: 5px;
+      font-size: 0.75rem; cursor: pointer; margin-left: 6px;
+      transition: border-color 0.2s, color 0.2s;
+      font-family: var(--mono);
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: var(--card2); border: 1px solid var(--accent);
+      color: var(--accent); padding: 10px 22px; border-radius: 10px;
+      font-family: var(--mono); font-size: 0.8rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      z-index: 6000; white-space: nowrap;
+      box-shadow: 0 0 20px rgba(0,212,255,0.2);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Scroll-to-top ── */
+    #scroll-top {
+      position: fixed; bottom: 84px; right: 28px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--muted); cursor: pointer; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; line-height: 1;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.3s, transform 0.3s, border-color 0.2s, color 0.2s;
+    }
+    #scroll-top.visible { opacity: 1; transform: translateY(0); }
+    #scroll-top:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 16px rgba(0,212,255,0.25); }
+
+    /* ── Modal image banner ── */
+    .modal-img-banner {
+      margin: -36px -36px 24px;
+      height: 180px; overflow: hidden;
+      border-radius: 20px 20px 0 0; position: relative;
+      flex-shrink: 0;
+    }
+    .modal-img-banner img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+      filter: brightness(0.55);
+      display: block;
+    }
+    .modal-img-banner::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 90px;
+      background: linear-gradient(transparent, var(--card2));
+    }
+
   </style>
 </head>
 <body>
@@ -1153,6 +1266,9 @@
 
   <!-- Particle canvas -->
   <canvas id="bg-canvas"></canvas>
+
+  <div id="toast">✓ Email copied to clipboard</div>
+  <button id="scroll-top" aria-label="Scroll to top">↑</button>
 
   <div class="floating-tag">
     <span style="color: var(--accent);">⬡</span>
@@ -1326,6 +1442,7 @@
             <div class="contact-item">
               <div class="contact-icon">✉️</div>
               <a href="mailto:almujati02@gmail.com">almujati02@gmail.com</a>
+              <button class="copy-btn" data-copy="almujati02@gmail.com" title="Copy email" aria-label="Copy email address">⎘</button>
             </div>
             <div class="contact-item">
               <div class="contact-icon">📞</div>
@@ -1362,6 +1479,15 @@
       <div class="projects-header reveal">
         <div class="section-label" style="margin-top:0">02 — Projects</div>
         <h2><span class="heading-gradient">Things I've built</span></h2>
+        <div class="proj-filters" id="proj-filters">
+          <button class="proj-filter active" data-filter="all">All</button>
+          <button class="proj-filter" data-filter="Python">Python</button>
+          <button class="proj-filter" data-filter="JavaScript">JavaScript</button>
+          <button class="proj-filter" data-filter="Node.js">Node.js</button>
+          <button class="proj-filter" data-filter="React">React</button>
+          <button class="proj-filter" data-filter="AI">AI / RAG</button>
+          <button class="proj-filter" data-filter="Docker">Docker</button>
+        </div>
       </div>
       <div class="projects-grid" id="projects-grid"></div>
     </section>
@@ -1664,6 +1790,7 @@
         card.innerHTML = `
           ${p.image ? `<div class="proj-card-img-bg" style="background-image:url('${p.image}')"></div>` : ''}
           <div class="proj-card-accent" style="background:linear-gradient(90deg,${p.color || 'var(--accent)'},transparent)"></div>
+          <div class="proj-card-num">${String(i + 1).padStart(2, '0')}</div>
           <div class="proj-card-header">
             <div class="proj-icon" style="background:${p.iconBg}">${p.icon}</div>
             <div class="proj-icon-links">${githubLink}${demoLink}</div>
@@ -1675,7 +1802,16 @@
           <button class="proj-expand-btn" tabindex="-1" aria-hidden="true">View details →</button>
         `;
 
-        card.addEventListener('click', () => openModal(p.id));
+        card.addEventListener('click', e => {
+          const rp = document.createElement('span');
+          rp.className = 'card-ripple';
+          const r = card.getBoundingClientRect();
+          rp.style.left = (e.clientX - r.left) + 'px';
+          rp.style.top  = (e.clientY - r.top)  + 'px';
+          card.appendChild(rp);
+          setTimeout(() => rp.remove(), 700);
+          openModal(p.id);
+        });
         card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(p.id); } });
 
         grid.appendChild(card);
@@ -1714,6 +1850,7 @@
       const badges = p.tech.map(t => `<span class="proj-badge">${t}</span>`).join('');
 
       modalBody.innerHTML = `
+        ${p.image ? `<div class="modal-img-banner"><img src="${p.image}" alt="${p.name} preview" loading="lazy"></div>` : ''}
         <div class="modal-icon" style="background:${p.iconBg}">${p.icon}</div>
         <div class="modal-title" id="modal-title">${p.name}</div>
         <div class="modal-badges">${badges}</div>
@@ -1950,6 +2087,46 @@
       });
       btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
+
+    /* ── Project filter ── */
+    const AI_TAGS = new Set(['RAG','AI/ML','Claude API','NLP']);
+    document.getElementById('proj-filters').addEventListener('click', e => {
+      const btn = e.target.closest('.proj-filter');
+      if (!btn) return;
+      document.querySelectorAll('.proj-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.proj-card').forEach(card => {
+        const p = PROJECTS.find(x => x.id === card.dataset.id);
+        const show = f === 'all'
+          || (f === 'AI'        && p.tech.some(t => AI_TAGS.has(t)))
+          || (f === 'JavaScript' && p.tech.some(t => ['JavaScript','TypeScript'].includes(t)))
+          || p.tech.includes(f);
+        card.style.transition = 'opacity 0.35s, transform 0.35s, border-color 0.25s, box-shadow 0.25s';
+        card.style.opacity       = show ? '1' : '0.18';
+        card.style.transform     = show ? '' : 'scale(0.96)';
+        card.style.pointerEvents = show ? '' : 'none';
+      });
+    });
+
+    /* ── Copy email + toast ── */
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+          const t = document.getElementById('toast');
+          t.classList.add('show');
+          setTimeout(() => t.classList.remove('show'), 2200);
+        });
+      });
+    });
+
+    /* ── Scroll to top ── */
+    const scrollTopBtn = document.getElementById('scroll-top');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
+    }, { passive: true });
+    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
     /* ── Focus trap inside modal ── */
     modal.addEventListener('keydown', e => {
