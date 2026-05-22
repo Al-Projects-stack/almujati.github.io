@@ -984,11 +984,164 @@
     /* ── Stat counter ── */
     .stat-num { cursor: default; }
 
+    /* ── Page loader ── */
+    #page-loader {
+      position: fixed; inset: 0; z-index: 99999;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 28px;
+      transition: opacity 0.7s ease 0.1s, visibility 0.7s ease 0.1s;
+    }
+    #page-loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loader-logo-wrap {
+      position: relative; width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .loader-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--accent); border-right-color: rgba(0,212,255,0.3);
+      animation: l-spin 0.85s linear infinite;
+    }
+    .loader-ring-2 {
+      position: absolute; inset: 7px; border-radius: 50%;
+      border: 1.5px solid transparent;
+      border-bottom-color: var(--accent-2); border-left-color: rgba(91,140,255,0.3);
+      animation: l-spin 0.65s linear infinite reverse;
+    }
+    .loader-ring-3 {
+      position: absolute; inset: 15px; border-radius: 50%;
+      border: 1px solid transparent;
+      border-top-color: rgba(168,85,247,0.7);
+      animation: l-spin 1.1s linear infinite;
+    }
+    .loader-initials {
+      font-family: var(--display); font-weight: 800; font-size: 1.1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .loader-bar {
+      width: 140px; height: 1px;
+      background: var(--border); border-radius: 1px; overflow: hidden;
+    }
+    .loader-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), #a855f7);
+      animation: l-fill 0.95s cubic-bezier(0.4,0,0.2,1) forwards;
+    }
+    @keyframes l-spin { to { transform: rotate(360deg); } }
+    @keyframes l-fill { from { width: 0; } to { width: 100%; } }
+
+    /* ── Sticky nav ── */
+    .nav-sticky {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 800;
+      background: rgba(6,10,15,0.82);
+      backdrop-filter: blur(24px) saturate(1.6);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+      transform: translateY(-100%);
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+    .nav-sticky.visible { transform: translateY(0); }
+    .nav-sticky-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--mono); font-size: 0.78rem; color: var(--muted2);
+    }
+    .nav-sticky-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: #060a0f; font-size: 0.7rem;
+    }
+    .nav-sticky-links { display: flex; gap: 2px; }
+    .nav-sticky-link {
+      color: var(--muted); text-decoration: none;
+      padding: 5px 11px; border-radius: 7px;
+      font-size: 0.8rem; font-family: var(--mono);
+      transition: color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .nav-sticky-link::after {
+      content: ''; position: absolute; bottom: 0; left: 11px; right: 11px;
+      height: 1px; background: var(--accent);
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.22s ease;
+    }
+    .nav-sticky-link.active { color: var(--accent); }
+    .nav-sticky-link.active::after { transform: scaleX(1); }
+    .nav-sticky-link:hover { background: var(--glass); color: var(--accent); }
+
+    /* ── Cursor trail ── */
+    .c-trail {
+      position: fixed; border-radius: 50%;
+      pointer-events: none; z-index: 9996;
+      transform: translate(-50%,-50%);
+    }
+
+    /* ── Background dot grid ── */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: radial-gradient(circle, rgba(0,212,255,0.09) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── Card image ghost on hover ── */
+    .proj-card { isolation: isolate; }
+    .proj-card-img-bg {
+      position: absolute; inset: 0; z-index: -1;
+      background-size: cover; background-position: top center;
+      border-radius: 14px;
+      opacity: 0; transition: opacity 0.45s ease;
+      filter: brightness(0.12) saturate(1.8);
+    }
+    .proj-card.card-visible:hover .proj-card-img-bg { opacity: 1; }
+
+    /* ── Stack categories ── */
+    .stack-categories { display: flex; flex-direction: column; gap: 14px; }
+    .stack-cat-label {
+      font-family: var(--mono); font-size: 0.63rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.16em;
+      margin-bottom: 7px; padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+
   </style>
 </head>
 <body>
 
+  <!-- Page loader -->
+  <div id="page-loader">
+    <div class="loader-logo-wrap">
+      <div class="loader-ring"></div>
+      <div class="loader-ring-2"></div>
+      <div class="loader-ring-3"></div>
+      <span class="loader-initials">AL</span>
+    </div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+  </div>
+
+  <!-- Sticky nav -->
+  <nav class="nav-sticky" id="nav-sticky" aria-label="Sticky navigation">
+    <div class="nav-sticky-brand">
+      <div class="nav-sticky-logo">AT</div>
+      Al Takura Mujati
+    </div>
+    <div class="nav-sticky-links">
+      <a class="nav-sticky-link" href="#about" data-sec="about">About</a>
+      <a class="nav-sticky-link" href="#projects" data-sec="projects">Projects</a>
+      <a class="nav-sticky-link" href="#stack" data-sec="stack">Stack</a>
+      <a class="nav-sticky-link" href="#contact" data-sec="contact">Contact</a>
+    </div>
+  </nav>
+
   <div id="scroll-progress"></div>
+
+  <div class="bg-grid"></div>
 
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
@@ -1121,28 +1274,48 @@
         <div class="panel reveal" style="transition-delay:0.15s">
           <div class="section-label">Stack</div>
           <h2 id="stack" style="font-size:1.2rem;margin-bottom:16px">Tech I use</h2>
-          <div class="stack-grid">
-            <div class="stack-item">C++</div>
-            <div class="stack-item">C#</div>
-            <div class="stack-item">Java</div>
-            <div class="stack-item">JavaScript</div>
-            <div class="stack-item">TypeScript</div>
-            <div class="stack-item">Node.js</div>
-            <div class="stack-item">Python</div>
-            <div class="stack-item">React</div>
-            <div class="stack-item">HTML/CSS</div>
-            <div class="stack-item">PostgreSQL</div>
-            <div class="stack-item">MySQL</div>
-            <div class="stack-item">MS SQL</div>
-            <div class="stack-item">Git</div>
-            <div class="stack-item">Docker</div>
-            <div class="stack-item">Azure</div>
-            <div class="stack-item">PowerShell</div>
-            <div class="stack-item">PHP</div>
-            <div class="stack-item">FastAPI</div>
-            <div class="stack-item">Claude API</div>
-            <div class="stack-item">REST API</div>
-            <div class="stack-item">SQLAlchemy</div>
+          <div class="stack-categories">
+            <div>
+              <div class="stack-cat-label">Languages</div>
+              <div class="stack-grid">
+                <div class="stack-item">C++</div>
+                <div class="stack-item">C#</div>
+                <div class="stack-item">Java</div>
+                <div class="stack-item">JavaScript</div>
+                <div class="stack-item">TypeScript</div>
+                <div class="stack-item">Python</div>
+                <div class="stack-item">PHP</div>
+                <div class="stack-item">HTML/CSS</div>
+              </div>
+            </div>
+            <div>
+              <div class="stack-cat-label">Frameworks &amp; Libraries</div>
+              <div class="stack-grid">
+                <div class="stack-item">Node.js</div>
+                <div class="stack-item">React</div>
+                <div class="stack-item">FastAPI</div>
+                <div class="stack-item">SQLAlchemy</div>
+                <div class="stack-item">REST API</div>
+                <div class="stack-item">Claude API</div>
+              </div>
+            </div>
+            <div>
+              <div class="stack-cat-label">Databases</div>
+              <div class="stack-grid">
+                <div class="stack-item">PostgreSQL</div>
+                <div class="stack-item">MySQL</div>
+                <div class="stack-item">MS SQL</div>
+              </div>
+            </div>
+            <div>
+              <div class="stack-cat-label">Cloud &amp; DevOps</div>
+              <div class="stack-grid">
+                <div class="stack-item">Docker</div>
+                <div class="stack-item">Azure</div>
+                <div class="stack-item">Git</div>
+                <div class="stack-item">PowerShell</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1489,6 +1662,7 @@
         card.dataset.id = p.id;
 
         card.innerHTML = `
+          ${p.image ? `<div class="proj-card-img-bg" style="background-image:url('${p.image}')"></div>` : ''}
           <div class="proj-card-accent" style="background:linear-gradient(90deg,${p.color || 'var(--accent)'},transparent)"></div>
           <div class="proj-card-header">
             <div class="proj-icon" style="background:${p.iconBg}">${p.icon}</div>
@@ -1651,6 +1825,59 @@
       slideshow.addEventListener('mouseleave', startTimer);
 
       startTimer();
+    })();
+
+    /* ── Page loader ── */
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('page-loader').classList.add('done'), 950);
+    });
+
+    /* ── Sticky nav + active section tracking ── */
+    const stickyNav = document.getElementById('nav-sticky');
+    const stickyLinks = document.querySelectorAll('.nav-sticky-link');
+    const sections = ['about', 'projects', 'stack', 'contact'];
+
+    window.addEventListener('scroll', () => {
+      stickyNav.classList.toggle('visible', window.scrollY > 120);
+    }, { passive: true });
+
+    const secIO = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const id = e.target.id;
+          stickyLinks.forEach(l => l.classList.toggle('active', l.dataset.sec === id));
+        }
+      });
+    }, { threshold: 0.4 });
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) secIO.observe(el);
+    });
+
+    /* ── Cursor trail ── */
+    const TRAIL = 14;
+    const trailDots = Array.from({ length: TRAIL }, (_, i) => {
+      const d = document.createElement('div');
+      d.className = 'c-trail';
+      const size = Math.max(2, (TRAIL - i) * 0.55);
+      d.style.cssText = `width:${size}px;height:${size}px;opacity:0;background:${i < 5 ? 'var(--accent)' : 'var(--accent-2)'};`;
+      document.body.appendChild(d);
+      return { el: d, x: 0, y: 0 };
+    });
+    let trailX = 0, trailY = 0;
+    document.addEventListener('mousemove', e => { trailX = e.clientX; trailY = e.clientY; }, { passive: true });
+    (function animTrail() {
+      let px = trailX, py = trailY;
+      trailDots.forEach((t, i) => {
+        t.el.style.left  = t.x + 'px';
+        t.el.style.top   = t.y + 'px';
+        t.el.style.opacity = String(((TRAIL - i) / TRAIL) * 0.55);
+        const lx = t.x, ly = t.y;
+        t.x = px; t.y = py;
+        px = lx + (px - lx) * 0.55;
+        py = ly + (py - ly) * 0.55;
+      });
+      requestAnimationFrame(animTrail);
     })();
 
     /* ── Scroll progress ── */
