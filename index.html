@@ -2291,14 +2291,14 @@
       btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
 
-    /* ── CV viewer (Google Docs) ── */
+    /* ── CV viewer (Office Online) ── */
     (function() {
       const btn = document.getElementById('cv-btn');
       if (!btn) return;
       const href = location.href;
       const base = href.endsWith('/') ? href : href.slice(0, href.lastIndexOf('/') + 1);
       const abs  = base + 'Al_Mujati_Master_Portfolio_CV.docx';
-      btn.href = 'https://docs.google.com/viewer?url=' + encodeURIComponent(abs);
+      btn.href = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(abs);
     })();
 
     /* ── GitHub live stats ── */
