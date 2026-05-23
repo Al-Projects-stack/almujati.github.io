@@ -1475,8 +1475,8 @@
         </div>
         <div class="hero-ctas">
           <a class="btn-primary" href="#projects">View projects ↗</a>
-          <a class="btn-cv" id="cv-btn" href="#" target="_blank" rel="noopener">View CV ↗</a>
-          <a class="cv-dl" href="Al_Mujati_Master_Portfolio_CV.docx" download title="Download CV (.docx)" aria-label="Download CV">↓</a>
+          <a class="btn-cv" id="cv-btn" href="Al_Mujati_Master_Portfolio_CV.pdf" target="_blank" rel="noopener">View CV ↗</a>
+          <a class="cv-dl" href="Al_Mujati_Master_Portfolio_CV.pdf" download title="Download CV (PDF)" aria-label="Download CV">↓</a>
           <a class="btn-outline" href="https://www.linkedin.com/in/al-mujati-494789224" target="_blank">LinkedIn</a>
         </div>
       </div>
@@ -2290,16 +2290,6 @@
       });
       btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
-
-    /* ── CV viewer (Office Online) ── */
-    (function() {
-      const btn = document.getElementById('cv-btn');
-      if (!btn) return;
-      const href = location.href;
-      const base = href.endsWith('/') ? href : href.slice(0, href.lastIndexOf('/') + 1);
-      const abs  = base + 'Al_Mujati_Master_Portfolio_CV.docx';
-      btn.href = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(abs);
-    })();
 
     /* ── GitHub live stats ── */
     (async () => {
