@@ -1204,7 +1204,17 @@
     #scroll-top.visible { opacity: 1; transform: translateY(0); }
     #scroll-top:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 16px rgba(0,212,255,0.25); }
 
-    /* ── CV download button ── */
+    /* ── CV buttons ── */
+    .cv-dl {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; border-radius: 10px;
+      border: 1px solid rgba(0,212,255,0.35);
+      color: var(--accent); text-decoration: none; font-size: 1rem;
+      background: rgba(0,212,255,0.04);
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    .cv-dl:hover { border-color: var(--accent); background: rgba(0,212,255,0.1); transform: translateY(-2px); }
     .btn-cv {
       display: inline-flex; align-items: center; gap: 8px;
       border: 1px solid rgba(0,212,255,0.35);
@@ -1465,7 +1475,8 @@
         </div>
         <div class="hero-ctas">
           <a class="btn-primary" href="#projects">View projects ↗</a>
-          <a class="btn-cv" id="cv-btn" href="https://www.linkedin.com/in/al-mujati-494789224" target="_blank" rel="noopener">↓ Download CV</a>
+          <a class="btn-cv" id="cv-btn" href="#" target="_blank" rel="noopener">View CV ↗</a>
+          <a class="cv-dl" href="Al_Mujati_Master_Portfolio_CV.docx" download title="Download CV (.docx)" aria-label="Download CV">↓</a>
           <a class="btn-outline" href="https://www.linkedin.com/in/al-mujati-494789224" target="_blank">LinkedIn</a>
         </div>
       </div>
@@ -1510,7 +1521,7 @@
               <div><div class="exp-title">BSc Honours — Security &amp; Network Engineering</div><div class="exp-org">Eduvos</div></div>
             </div>
             <div class="exp-item">
-              <div class="exp-year">2024</div>
+              <div class="exp-year">2025</div>
               <div class="exp-dot"></div>
               <div><div class="exp-title">Remote Developer</div><div class="exp-org">Sewandgrow · Johannesburg</div></div>
             </div>
@@ -2279,6 +2290,16 @@
       });
       btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
     });
+
+    /* ── CV viewer (Google Docs) ── */
+    (function() {
+      const btn = document.getElementById('cv-btn');
+      if (!btn) return;
+      const href = location.href;
+      const base = href.endsWith('/') ? href : href.slice(0, href.lastIndexOf('/') + 1);
+      const abs  = base + 'Al_Mujati_Master_Portfolio_CV.docx';
+      btn.href = 'https://docs.google.com/viewer?url=' + encodeURIComponent(abs);
+    })();
 
     /* ── GitHub live stats ── */
     (async () => {
