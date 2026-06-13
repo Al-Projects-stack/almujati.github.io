@@ -1,6 +1,10 @@
 # Al Mujati · Portfolio
 
-Personal portfolio site with a dual-theme experience: **Cyber Edition** and **Vista Edition**.
+**Same developer. Different lens.**
+
+A portfolio that explores how the same work can feel completely different depending on how you frame it. Two themes, one body of work — a reminder that perspective shapes perception.
+
+Dual-theme experience: **Cyber Edition** and **Vista Edition**.
 
 ## Themes
 
