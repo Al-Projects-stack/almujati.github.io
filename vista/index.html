@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Al Mujati · Vista Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;user-select:none;-webkit-user-select:none}
+
+/* ── Mobile warning ── */
+.mobile-warn{display:none;position:fixed;inset:0;z-index:999999;background:#0a0e14;color:#d6e4ed;align-items:center;justify-content:center;text-align:center;padding:32px;font-family:'Segoe UI',sans-serif}
+.mobile-warn h2{font-size:1.2rem;font-weight:600;margin-bottom:12px}
+.mobile-warn p{font-size:0.85rem;color:#8a9bb5;line-height:1.5}
+@media(max-width:800px){.mobile-warn{display:flex}.desktop{display:none!important}}
+
+/* ── Boot screen ── */
+#boot{
+position:fixed;inset:0;z-index:99999;
+background:#000;
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+transition:opacity 0.6s ease;
+}
+#boot.done{opacity:0;pointer-events:none}
+.boot-logo{font-size:4rem;font-weight:700;color:#fff;letter-spacing:-2px;margin-bottom:8px;opacity:0;animation:fadeIn 0.8s ease 0.3s forwards}
+.boot-logo span{color:#4a90d9}
+.boot-sub{font-size:0.7rem;color:#888;letter-spacing:6px;text-transform:uppercase;margin-bottom:48px;opacity:0;animation:fadeIn 0.8s ease 0.8s forwards;font-weight:300}
+.boot-bar-wrap{width:280px;height:10px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;opacity:0;animation:fadeIn 0.4s ease 1.2s forwards}
+.boot-bar-fill{height:100%;width:0;background:linear-gradient(90deg,#2d8c2d,#4caf50);border-radius:2px;animation:bootFill 2.2s cubic-bezier(0.4,0,0.2,1) 1.4s forwards}
+.boot-version{font-size:0.65rem;color:#555;margin-top:16px;letter-spacing:2px}
+@keyframes fadeIn{to{opacity:1}}
+@keyframes bootFill{to{width:100%}}
+
+/* ── Desktop ── */
+.desktop{position:fixed;inset:0;z-index:0}
+
+/* Aurora wallpaper */
+.wallpaper{
+position:fixed;inset:0;z-index:-1;
+background:linear-gradient(180deg,#001a33 0%,#003366 20%,#004080 40%,#1a4a7a 55%,#0d2b4a 75%,#001a2e 100%);
+}
+.wallpaper::before{
+content:'';position:absolute;inset:0;
+background:radial-gradient(ellipse 80% 40% at 30% 30%,rgba(100,180,255,0.15) 0%,transparent 60%),
+radial-gradient(ellipse 60% 30% at 70% 40%,rgba(180,120,255,0.1) 0%,transparent 50%),
+radial-gradient(ellipse 90% 30% at 50% 60%,rgba(80,200,255,0.08) 0%,transparent 50%);
+}
+.aurora-svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* ── Desktop icons ── */
+.desktop-icons{position:absolute;top:16px;left:12px;z-index:10;display:flex;flex-direction:column;gap:8px}
+.desk-icon{
+display:flex;flex-direction:column;align-items:center;gap:4px;
+padding:8px 6px;width:74px;border-radius:6px;cursor:pointer;
+color:rgba(255,255,255,0.9);font-size:11px;text-align:center;line-height:1.2;
+transition:background 0.15s;word-wrap:break-word;font-weight:400;
+}
+.desk-icon:hover{background:rgba(255,255,255,0.08)}
+.desk-icon:active{background:rgba(255,255,255,0.12)}
+.desk-icon.selected{background:rgba(74,144,217,0.35);outline:1px solid rgba(74,144,217,0.6)}
+.desk-icon .ico{font-size:36px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}
+.desk-icon .ico svg{width:36px;height:36px;display:block}
+
+/* ── Aero glass windows ── */
+.window{
+position:absolute;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(20px);
+-webkit-backdrop-filter:blur(20px);
+border:1px solid rgba(255,255,255,0.2);
+border-radius:8px 8px 4px 4px;
+box-shadow:0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3);
+z-index:1000;
+min-width:280px;
+display:none;
+overflow:hidden;
+}
+.window.active{display:flex;flex-direction:column}
+.window.minimized{display:none!important}
+.window.maximized{border-radius:0!important;top:0!important;left:0!important;width:100%!important;height:calc(100% - 48px)!important}
+.titlebar{
+display:flex;align-items:center;height:30px;padding:0 6px 0 12px;
+background:linear-gradient(180deg,rgba(74,144,217,0.35),rgba(50,100,180,0.25));
+border-bottom:1px solid rgba(255,255,255,0.08);
+cursor:default;flex-shrink:0;
+}
+.titlebar.dragging{cursor:move}
+.title-icon{font-size:14px;margin-right:8px;flex-shrink:0;width:16px;text-align:center}
+.title-text{flex:1;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title-btns{display:flex;gap:4px;margin-left:8px;flex-shrink:0}
+.title-btn{
+width:21px;height:21px;border:none;border-radius:0;
+display:flex;align-items:center;justify-content:center;
+font-size:11px;cursor:pointer;color:rgba(255,255,255,0.8);
+background:rgba(255,255,255,0.15);
+border:1px solid rgba(255,255,255,0.12);
+transition:background 0.15s;
+line-height:1;
+}
+.title-btn:hover{background:rgba(255,255,255,0.25)}
+.title-btn.close:hover{background:#c44;border-color:#c44}
+.window-body{padding:16px;flex:1;overflow-y:auto;color:#fff;font-size:13px;min-height:60px}
+.window-body h2{font-size:16px;font-weight:700;margin-bottom:8px;color:#e8f0ff}
+.window-body p{color:rgba(255,255,255,0.75);line-height:1.5;font-weight:300;font-size:13px}
+.resize-handle{
+position:absolute;bottom:0;right:0;width:14px;height:14px;
+cursor:nwse-resize;z-index:2;
+}
+.resize-handle::after{
+content:'';position:absolute;bottom:2px;right:2px;
+width:8px;height:8px;
+border-right:2px solid rgba(255,255,255,0.3);
+border-bottom:2px solid rgba(255,255,255,0.3);
+}
+
+/* ── Window content styles ── */
+.window-body .proj-item{
+padding:10px 12px;border-radius:6px;margin-bottom:6px;
+background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.06);
+transition:background 0.15s;cursor:default;
+}
+.window-body .proj-item:hover{background:rgba(74,144,217,0.12)}
+.proj-item .proj-name{font-weight:600;font-size:13px;color:#e0ecff}
+.proj-item .proj-desc{font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px}
+.proj-item .proj-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.proj-tag{
+background:rgba(74,144,217,0.15);border:1px solid rgba(74,144,217,0.2);
+color:#8ab8ff;font-size:10px;padding:1px 7px;border-radius:3px;
+}
+.proj-btn{
+display:inline-block;margin-top:6px;
+background:rgba(74,144,217,0.2);border:1px solid rgba(74,144,217,0.3);
+color:#8ab8ff;padding:3px 10px;border-radius:3px;font-size:11px;text-decoration:none;
+transition:background 0.15s;
+}
+.proj-btn:hover{background:rgba(74,144,217,0.35)}
+
+.skill-group{margin-bottom:12px}
+.skill-group-label{font-size:11px;font-weight:600;color:#8ab8ff;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.skill-tags{display:flex;flex-wrap:wrap;gap:5px}
+.skill-tag{
+background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+color:rgba(255,255,255,0.7);font-size:11px;padding:3px 10px;border-radius:4px;
+}
+
+.contact-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;margin-bottom:4px;background:rgba(255,255,255,0.04)}
+.contact-row .c-icon{font-size:18px;width:24px;text-align:center}
+.contact-row a{color:#8ab8ff;text-decoration:none;font-size:13px}
+.contact-row a:hover{text-decoration:underline}
+
+.bin-item{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:4px;cursor:default}
+.bin-item:hover{background:rgba(255,255,255,0.06)}
+.bin-item .bi{font-size:20px}
+
+/* ── Taskbar ── */
+#taskbar{
+position:fixed;bottom:0;left:0;right:0;z-index:9990;height:48px;
+background:rgba(180,200,230,0.12);
+backdrop-filter:blur(24px);
+-webkit-backdrop-filter:blur(24px);
+border-top:1px solid rgba(255,255,255,0.15);
+display:flex;align-items:center;padding:0 6px;
+box-shadow:0 -2px 20px rgba(0,0,0,0.3);
+}
+.start-btn{
+display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;
+border:none;border-radius:4px;cursor:pointer;flex-shrink:0;
+background:rgba(255,255,255,0.08);
+color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;
+transition:background 0.15s;font-family:inherit;
+}
+.start-btn:hover{background:rgba(255,255,255,0.16)}
+.start-btn:active{background:rgba(255,255,255,0.1)}
+.start-orb{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#6fb8ff,#2a6bb0);box-shadow:0 0 8px rgba(74,144,217,0.5);flex-shrink:0}
+.tb-divider{width:1px;height:28px;background:rgba(255,255,255,0.12);margin:0 6px;flex-shrink:0}
+.tb-windows{flex:1;display:flex;align-items:center;gap:4px;overflow-x:auto;padding:0 4px;min-width:0}
+.tb-windows::-webkit-scrollbar{display:none}
+.tb-window{
+height:32px;padding:0 12px;border:none;border-radius:4px;cursor:pointer;flex-shrink:0;
+background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.8);
+font-size:11px;font-family:inherit;transition:background 0.15s;
+display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.tb-window:hover{background:rgba(255,255,255,0.14)}
+.tb-window.active{background:rgba(74,144,217,0.25)}
+.tb-tray{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0 8px;font-size:11px;color:rgba(255,255,255,0.8)}
+.tb-tray .tray-icon{font-size:14px;cursor:default}
+.tb-tray .clock{font-size:11px;cursor:default}
+
+/* ── Start Menu ── */
+#startMenu{
+position:fixed;bottom:48px;left:0;z-index:9989;
+width:380px;max-height:480px;
+background:rgba(220,230,245,0.15);
+backdrop-filter:blur(30px);
+-webkit-backdrop-filter:blur(30px);
+border:1px solid rgba(255,255,255,0.12);
+border-radius:8px 8px 0 0;
+box-shadow:0 -4px 32px rgba(0,0,0,0.4);
+display:none;flex-direction:column;
+}
+#startMenu.open{display:flex}
+.sm-user{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sm-avatar{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,#4a90d9,#2a6bb0);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700}
+.sm-name{font-size:13px;color:#fff;font-weight:600}
+.sm-body{display:flex;flex:1;overflow:hidden}
+.sm-col-left{width:55%;padding:8px 4px;border-right:1px solid rgba(255,255,255,0.06)}
+.sm-col-right{width:45%;padding:8px 4px}
+.sm-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;color:rgba(255,255,255,0.85);transition:background 0.12s}
+.sm-item:hover{background:rgba(255,255,255,0.1)}
+.sm-item .sm-ico{font-size:16px;width:20px;text-align:center}
+.sm-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.06)}
+.sm-search{flex:1;height:28px;border:none;border-radius:4px;padding:0 10px;font-size:11px;background:rgba(255,255,255,0.08);color:#fff;font-family:inherit;outline:none;margin-right:8px}
+.sm-search::placeholder{color:rgba(255,255,255,0.3)}
+.sm-power{width:28px;height:28px;border:none;border-radius:4px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background 0.12s}
+.sm-power:hover{background:rgba(255,255,255,0.15)}
+
+/* ── Context menu ── */
+#ctxMenu{
+position:fixed;z-index:9995;min-width:180px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(24px);
+-webkit-backdrop-filter:blur(24px);
+border:1px solid rgba(255,255,255,0.15);
+border-radius:6px;
+padding:4px 0;
+box-shadow:0 8px 24px rgba(0,0,0,0.5);
+display:none;
+}
+#ctxMenu.open{display:block}
+.ctx-item{display:flex;align-items:center;gap:10px;padding:6px 14px;font-size:12px;color:rgba(255,255,255,0.85);cursor:pointer;transition:background 0.1s}
+.ctx-item:hover{background:rgba(74,144,217,0.3)}
+.ctx-sep{height:1px;background:rgba(255,255,255,0.08);margin:4px 8px}
+
+/* ── Context menu on bin item ── */
+#binCtx{
+position:fixed;z-index:9996;min-width:160px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(24px);
+-webkit-backdrop-filter:blur(24px);
+border:1px solid rgba(255,255,255,0.15);
+border-radius:6px;
+padding:4px 0;
+box-shadow:0 8px 24px rgba(0,0,0,0.5);
+display:none;
+}
+#binCtx.open{display:block}
+
+/* ── Scrollbar ── */
+.window-body::-webkit-scrollbar{width:8px}
+.window-body::-webkit-scrollbar-track{background:rgba(0,0,0,0.1);border-radius:4px}
+.window-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:4px}
+.window-body::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.25)}
+
+/* ── System info window ── */
+.sysinfo-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
+.sysinfo-grid .si-label{color:rgba(255,255,255,0.5)}
+.sysinfo-grid .si-val{color:#e0ecff}
+</style>
+</head>
+<body>
+
+<div class="mobile-warn">
+<div>
+<h2>Desktop Experience</h2>
+<p>This portfolio is designed for desktop viewing.<br>Please open it on a larger screen.</p>
+</div>
+</div>
+
+<!-- Boot screen -->
+<div id="boot">
+<div class="boot-logo"><span>Vista</span>Portfolio</div>
+<div class="boot-sub">Al Mujati</div>
+<div class="boot-bar-wrap"><div class="boot-bar-fill"></div></div>
+<div class="boot-version">Microsoft Windows Vista</div>
+</div>
+
+<div class="desktop" id="desktop">
+
+<!-- Wallpaper -->
+<div class="wallpaper" id="wallpaper">
+<svg class="aurora-svg" viewBox="0 0 1440 900" preserveAspectRatio="none">
+<defs>
+<linearGradient id="aurora1" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="rgba(60,160,255,0.08)"/>
+<stop offset="50%" stop-color="rgba(140,100,255,0.06)"/>
+<stop offset="100%" stop-color="rgba(40,180,255,0.03)"/>
+</linearGradient>
+<linearGradient id="aurora2" x1="0" y1="1" x2="1" y2="0">
+<stop offset="0%" stop-color="rgba(30,120,220,0.05)"/>
+<stop offset="60%" stop-color="rgba(80,60,200,0.04)"/>
+<stop offset="100%" stop-color="rgba(20,60,140,0.02)"/>
+</linearGradient>
+<filter id="blur1"><feGaussianBlur stdDeviation="60"/></filter>
+<filter id="blur2"><feGaussianBlur stdDeviation="80"/></filter>
+</defs>
+<ellipse cx="300" cy="200" rx="500" ry="300" fill="url(#aurora1)" filter="url(#blur1)">
+<animate attributeName="cx" values="300;500;300" dur="20s" repeatCount="indefinite"/>
+<animate attributeName="cy" values="200;250;200" dur="16s" repeatCount="indefinite"/>
+</ellipse>
+<ellipse cx="1100" cy="350" rx="450" ry="250" fill="url(#aurora2)" filter="url(#blur2)">
+<animate attributeName="cx" values="1100;900;1100" dur="24s" repeatCount="indefinite"/>
+<animate attributeName="cy" values="350;300;350" dur="18s" repeatCount="indefinite"/>
+</ellipse>
+<ellipse cx="720" cy="550" rx="600" ry="200" fill="rgba(40,120,220,0.04)" filter="url(#blur1)">
+<animate attributeName="cx" values="720;600;720" dur="28s" repeatCount="indefinite"/>
+</ellipse>
+</svg>
+</div>
+
+<!-- Desktop icons -->
+<div class="desktop-icons" id="desktopIcons">
+<div class="desk-icon" data-window="about" onclick="openWindow('about')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="6" width="36" height="36" rx="6" fill="#4a90d9"/><rect x="10" y="10" width="28" height="4" rx="2" fill="#fff" opacity="0.8"/><rect x="10" y="18" width="28" height="2" rx="1" fill="#fff" opacity="0.4"/><rect x="10" y="24" width="20" height="2" rx="1" fill="#fff" opacity="0.4"/><rect x="10" y="30" width="24" height="2" rx="1" fill="#fff" opacity="0.4"/></svg></div>My Portfolio</div>
+<div class="desk-icon" data-window="projects" onclick="openWindow('projects')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="14" width="36" height="28" rx="4" fill="#e8a820"/><rect x="6" y="10" width="36" height="6" rx="2" fill="#f4c542"/><rect x="10" y="22" width="12" height="2" rx="1" fill="#fff" opacity="0.5"/><rect x="10" y="28" width="16" height="2" rx="1" fill="#fff" opacity="0.5"/><rect x="10" y="34" width="14" height="2" rx="1" fill="#fff" opacity="0.5"/></svg></div>Projects</div>
+<div class="desk-icon" data-window="skills" onclick="openWindow('skills')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="16" stroke="#5ab8ff" stroke-width="2" fill="none"/><circle cx="24" cy="24" r="8" stroke="#5ab8ff" stroke-width="2" fill="none"/><circle cx="24" cy="24" r="3" fill="#5ab8ff"/><line x1="24" y1="8" x2="24" y2="16" stroke="#5ab8ff" stroke-width="2"/><line x1="24" y1="32" x2="24" y2="40" stroke="#5ab8ff" stroke-width="2"/><line x1="8" y1="24" x2="16" y2="24" stroke="#5ab8ff" stroke-width="2"/><line x1="32" y1="24" x2="40" y2="24" stroke="#5ab8ff" stroke-width="2"/></svg></div>Skills</div>
+<div class="desk-icon" data-window="contact" onclick="openWindow('contact')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="28" rx="4" fill="#4a90d9"/><polyline points="8,12 24,26 40,12" stroke="#fff" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="22" y2="22" stroke="#fff" stroke-width="1.5" opacity="0.6"/><line x1="40" y1="36" x2="26" y2="22" stroke="#fff" stroke-width="1.5" opacity="0.6"/></svg></div>Contact</div>
+<div class="desk-icon" data-window="github" onclick="openWindow('github')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="4" fill="#1a1a2e"/><circle cx="32" cy="18" r="6" fill="#4a90d9" opacity="0.6"/><circle cx="20" cy="28" r="5" fill="#5ab8ff" opacity="0.4"/><circle cx="28" cy="14" r="3" fill="#7ac8ff"/><line x1="24" y1="36" x2="24" y2="12" stroke="#4a90d9" stroke-width="1.5"/></svg></div>GitHub</div>
+<div class="desk-icon" data-window="recycle" onclick="openWindow('recycle')"><div class="ico"><svg viewBox="0 0 48 48" fill="none"><rect x="12" y="18" width="24" height="22" rx="2" fill="#aaa"/><path d="M16 18L20 10h8l4 8" fill="#999"/><line x1="20" y1="26" x2="20" y2="36" stroke="#fff" stroke-width="1.5" opacity="0.5"/><line x1="24" y1="26" x2="24" y2="36" stroke="#fff" stroke-width="1.5" opacity="0.5"/><line x1="28" y1="26" x2="28" y2="36" stroke="#fff" stroke-width="1.5" opacity="0.5"/></svg></div>Recycle Bin</div>
+</div>
+
+<!-- Windows -->
+<div class="window" id="win-about" style="width:460px;height:320px;top:80px;left:120px">
+<div class="titlebar"><div class="title-icon">👤</div><div class="title-text">About Al Mujati</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('about')" title="Minimize">−</button><button class="title-btn" onclick="maximizeWindow('about')" title="Maximize">□</button><button class="title-btn close" onclick="closeWindow('about')" title="Close">✕</button></div></div>
+<div class="window-body">
+<h2>Al Mujati</h2>
+<p style="color:#8ab8ff;font-size:14px;margin-bottom:10px">Backend Developer &amp; AI Engineer</p>
+<p>Backend developer and AI engineer based in Johannesburg, South Africa. I design and build backend systems, cloud infrastructure, and automation pipelines.</p>
+<p style="margin-top:10px"><strong>📍</strong> Johannesburg, South Africa</p>
+<p><strong>🎓</strong> BSc Computer Science (completed) · BSc Honours Security &amp; Network Engineering (in progress) — Eduvos</p>
+<p style="margin-top:12px;padding:10px;background:rgba(74,144,217,0.1);border-radius:6px;border:1px solid rgba(74,144,217,0.15)"><strong>⚡ Currently building:</strong> tinyllm — a decoder-only transformer LLM from scratch in PyTorch</p>
+</div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-projects" style="width:540px;height:400px;top:100px;left:180px">
+<div class="titlebar"><div class="title-icon">📁</div><div class="title-text">Projects</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('projects')">−</button><button class="title-btn" onclick="maximizeWindow('projects')">□</button><button class="title-btn close" onclick="closeWindow('projects')">✕</button></div></div>
+<div class="window-body" id="projectsBody"></div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-skills" style="width:420px;height:360px;top:140px;left:240px">
+<div class="titlebar"><div class="title-icon">⚙️</div><div class="title-text">Skills</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('skills')">−</button><button class="title-btn" onclick="maximizeWindow('skills')">□</button><button class="title-btn close" onclick="closeWindow('skills')">✕</button></div></div>
+<div class="window-body" id="skillsBody"></div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-contact" style="width:360px;height:220px;top:180px;left:300px">
+<div class="titlebar"><div class="title-icon">✉️</div><div class="title-text">Contact</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('contact')">−</button><button class="title-btn" onclick="maximizeWindow('contact')">□</button><button class="title-btn close" onclick="closeWindow('contact')">✕</button></div></div>
+<div class="window-body" id="contactBody"></div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-github" style="width:400px;height:280px;top:120px;left:200px">
+<div class="titlebar"><div class="title-icon">💻</div><div class="title-text">GitHub</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('github')">−</button><button class="title-btn" onclick="maximizeWindow('github')">□</button><button class="title-btn close" onclick="closeWindow('github')">✕</button></div></div>
+<div class="window-body">
+<h2>Al-Projects-stack</h2>
+<p style="margin-bottom:12px">Check out my repositories and contributions on GitHub.</p>
+<div class="contact-row"><div class="c-icon">🔗</div><a href="https://github.com/Al-Projects-stack" target="_blank" rel="noopener">github.com/Al-Projects-stack</a></div>
+<div class="contact-row"><div class="c-icon">📊</div><span style="color:rgba(255,255,255,0.6)">17+ public repositories · Active contributor</span></div>
+<div style="margin-top:14px"><a class="proj-btn" href="https://github.com/Al-Projects-stack" target="_blank" rel="noopener">Open GitHub Profile →</a></div>
+</div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-recycle" style="width:380px;height:260px;top:160px;left:260px">
+<div class="titlebar"><div class="title-icon">🗑️</div><div class="title-text">Recycle Bin</div><div class="title-btns"><button class="title-btn" onclick="minimizeWindow('recycle')">−</button><button class="title-btn" onclick="maximizeWindow('recycle')">□</button><button class="title-btn close" onclick="closeWindow('recycle')">✕</button></div></div>
+<div class="window-body">
+<div style="padding:10px;text-align:center;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06)">
+<div style="font-size:32px;margin-bottom:6px">🗑️</div>
+<div style="font-size:12px;color:rgba(255,255,255,0.7)">Recycle Bin</div>
+</div>
+<div class="bin-item" id="binItem" oncontextmenu="showBinContextMenu(event)">
+<div class="bi">📦</div>
+<div><div style="font-size:13px;color:#e0ecff">rejected_applications.zip</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">0 bytes</div></div>
+</div>
+<div style="margin-top:8px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center" id="binTooltip">Empty. Keep applying.</div>
+</div>
+<div class="resize-handle"></div>
+</div>
+
+<div class="window" id="win-sysinfo" style="width:320px;height:200px;top:200px;left:340px">
+<div class="titlebar"><div class="title-icon">ℹ️</div><div class="title-text">System Properties</div><div class="title-btns"><button class="title-btn close" onclick="closeWindow('sysinfo')">✕</button></div></div>
+<div class="window-body">
+<h2>My System</h2>
+<div class="sysinfo-grid">
+<span class="si-label">CPU:</span><span class="si-val">Hustle 9000</span>
+<span class="si-label">RAM:</span><span class="si-val">Unlimited Ambition</span>
+<span class="si-label">OS:</span><span class="si-val">Grinding Vista™</span>
+<span class="si-label">Status:</span><span class="si-val">Open to Work</span>
+<span class="si-label">Build:</span><span class="si-val">2026 Edition</span>
+</div>
+</div>
+<div class="resize-handle"></div>
+</div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+<button class="start-btn" id="startBtn" onclick="toggleStartMenu()"><div class="start-orb"></div>Start</button>
+<div class="tb-divider"></div>
+<div class="tb-windows" id="tbWindows"></div>
+<div class="tb-divider"></div>
+<div class="tb-tray">
+<span class="tray-icon">🔊</span>
+<span class="tray-icon">📶</span>
+<span class="clock" id="clock"></span>
+</div>
+</div>
+
+<!-- Start Menu -->
+<div id="startMenu">
+<div class="sm-user"><div class="sm-avatar">AM</div><div class="sm-name">Al Mujati</div></div>
+<div class="sm-body">
+<div class="sm-col-left">
+<div class="sm-item" onclick="openWindow('about');closeStartMenu()"><span class="sm-ico">👤</span>About Me</div>
+<div class="sm-item" onclick="openWindow('projects');closeStartMenu()"><span class="sm-ico">📁</span>Projects</div>
+<div class="sm-item" onclick="openWindow('skills');closeStartMenu()"><span class="sm-ico">⚙️</span>Skills</div>
+<div class="sm-item" onclick="openWindow('contact');closeStartMenu()"><span class="sm-ico">✉️</span>Contact</div>
+<div class="sm-item" onclick="openWindow('github');closeStartMenu()"><span class="sm-ico">💻</span>GitHub</div>
+</div>
+<div class="sm-col-right">
+<div class="sm-item" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'"><span class="sm-ico">🏠</span>Portfolio Site</div>
+<div class="sm-item" onclick="window.open('https://github.com/Al-Projects-stack','_blank')"><span class="sm-ico">📊</span>GitHub Stats</div>
+<div class="sm-item" onclick="window.open('https://linkedin.com/in/al-mujati-494789224','_blank')"><span class="sm-ico">🔗</span>LinkedIn</div>
+</div>
+</div>
+<div class="sm-footer">
+<input class="sm-search" type="text" placeholder="Search portfolio..." readonly>
+<button class="sm-power" onclick="closeStartMenu()" title="Close">⏻</button>
+</div>
+</div>
+
+<!-- Desktop context menu -->
+<div id="ctxMenu">
+<div class="ctx-item" onclick="refreshPortfolio()">🔄 Refresh Portfolio</div>
+<div class="ctx-item" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'">🎨 Change Theme</div>
+<div class="ctx-item" onclick="window.open('https://github.com/Al-Projects-stack/almujati.github.io','_blank')">📄 View Source</div>
+<div class="ctx-sep"></div>
+<div class="ctx-item" onclick="openSysInfo()">ℹ️ Properties</div>
+</div>
+
+<!-- Bin context menu -->
+<div id="binCtx">
+<div class="ctx-item" onclick="recycleAction('hope')">🔁 Restore Hope</div>
+<div class="ctx-item" onclick="recycleAction('doubt')">🗑️ Delete Self-Doubt</div>
+<div class="ctx-sep"></div>
+<div class="ctx-item" onclick="recycleAction('empty')">🧹 Empty Bin</div>
+</div>
+
+<!-- Switch theme link -->
+<a class="switch-link" href="../index.html" style="position:fixed;bottom:56px;right:12px;z-index:9990;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(255,255,255,0.4);text-decoration:none;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.2);transition:color 0.15s,background 0.15s" onmouseover="this.style.color='#fff';this.style.background='rgba(0,0,0,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.4)';this.style.background='rgba(0,0,0,0.2)'" onclick="localStorage.removeItem('portfolioTheme')">Switch Theme</a>
+
+</div><!-- end desktop -->
+
+<script>
+// ── Data ──
+var projects=[
+{name:'CV Automation App',desc:'AI-powered CV and cover letter generator. FastAPI + Claude API, tailors Word documents to job descriptions.',tags:['Python','FastAPI','React','Claude API','Docker'],url:'https://github.com/Al-Projects-stack/CV-Automation-tool'},
+{name:'tinyllm',desc:'Decoder-only transformer LLM built from scratch in pure PyTorch. Custom BPE tokenizer, RMSNorm, SwiGLU.',tags:['Python','PyTorch','Transformers','BPE'],url:'https://github.com/Al-Projects-stack/tinyllm'},
+{name:'Job Tracker API',desc:'RESTful microservice for job application tracking. Spring Boot, PostgreSQL, JWT auth.',tags:['Java','Spring Boot','PostgreSQL','JWT','Docker'],url:'https://github.com/Al-Projects-stack/job-tracker'},
+{name:'Finance Dashboard',desc:'Personal finance dashboard with ZAR transaction tracking, cash flow charts.',tags:['React','TypeScript','Node.js','PostgreSQL'],url:'https://github.com/Al-Projects-stack/finance-dashboard'},
+{name:'E90 Club Website',desc:'Full site revamp for a Johannesburg car club. Dark and red aesthetic.',tags:['HTML','CSS','JavaScript'],url:'#'},
+{name:'Password Generator',desc:'Cryptographically secure browser-based password generator using Web Crypto API with entropy scoring.',tags:['JavaScript','Web Crypto API'],url:'https://github.com/Al-Projects-stack/Password-generator'}
+];
+
+var skillGroups=[
+{label:'Languages',items:['Python','Java','C#','TypeScript','JavaScript','C++']},
+{label:'Backend',items:['FastAPI','Spring Boot','Node.js','.NET','REST APIs','Docker']},
+{label:'Frontend',items:['React','HTML5','CSS3']},
+{label:'AI & ML',items:['PyTorch','Claude API','LLM Architecture','Prompt Engineering']},
+{label:'DevOps & Cloud',items:['Docker','Azure','GitHub Actions','Render','Firebase']}
+];
+
+// ── Populate windows ──
+(function(){
+var pb=document.getElementById('projectsBody');
+projects.forEach(function(p){
+var el=document.createElement('div');el.className='proj-item';
+el.innerHTML='<div class="proj-name">'+p.name+'</div><div class="proj-desc">'+p.desc+'</div><div class="proj-tags">'+p.tags.map(function(t){return '<span class="proj-tag">'+t+'</span>'}).join('')+'</div>'+(p.url!='#'?'<a class="proj-btn" href="'+p.url+'" target="_blank" rel="noopener">View on GitHub →</a>':'');
+pb.appendChild(el);
+});
+var sb=document.getElementById('skillsBody');
+skillGroups.forEach(function(g){
+var el=document.createElement('div');el.className='skill-group';
+el.innerHTML='<div class="skill-group-label">'+g.label+'</div><div class="skill-tags">'+g.items.map(function(t){return '<span class="skill-tag">'+t+'</span>'}).join('')+'</div>';
+sb.appendChild(el);
+});
+var cb=document.getElementById('contactBody');
+cb.innerHTML='<div class="contact-row"><div class="c-icon">✉️</div><a href="mailto:almujati02@gmail.com">almujati02@gmail.com</a></div><div class="contact-row"><div class="c-icon">🐙</div><a href="https://github.com/Al-Projects-stack" target="_blank">github.com/Al-Projects-stack</a></div><div class="contact-row"><div class="c-icon">🔗</div><a href="https://linkedin.com/in/al-mujati-494789224" target="_blank">linkedin.com/in/al-mujati-494789224</a></div>';
+})();
+
+// ── Boot sequence ──
+setTimeout(function(){document.getElementById('boot').classList.add('done')},3800);
+
+// ── Clock ──
+function updateClock(){
+var d=new Date(),h=d.getHours().toString().padStart(2,'0'),m=d.getMinutes().toString().padStart(2,'0');
+document.getElementById('clock').textContent=h+':'+m;
+}
+updateClock();setInterval(updateClock,30000);
+
+// ── Window management ──
+var winIndex=1000;
+var openWindows={};
+
+function openWindow(id){
+var win=document.getElementById('win-'+id);
+if(!win)return;
+if(win.classList.contains('minimized'))win.classList.remove('minimized');
+win.classList.add('active');
+win.style.zIndex=++winIndex;
+focusWindow(id);
+updateTaskbar();
+if(!openWindows[id]){openWindows[id]=true;updateTaskbar()}
+}
+
+function closeWindow(id){
+var win=document.getElementById('win-'+id);
+if(!win)return;
+win.classList.remove('active');
+delete openWindows[id];
+updateTaskbar();
+}
+
+function minimizeWindow(id){
+var win=document.getElementById('win-'+id);
+if(!win)return;
+win.classList.add('minimized');
+updateTaskbar();
+}
+
+function maximizeWindow(id){
+var win=document.getElementById('win-'+id);
+if(!win)return;
+win.classList.toggle('maximized');
+if(win.classList.contains('maximized')){win._prevZ=win.style.zIndex;win.style.zIndex=++winIndex}
+else{win.style.zIndex=win._prevZ||++winIndex}
+updateTaskbar();
+}
+
+function focusWindow(id){
+var win=document.getElementById('win-'+id);
+if(!win)return;
+win.style.zIndex=++winIndex;
+var btns=document.querySelectorAll('.tb-window');
+btns.forEach(function(b){b.classList.remove('active')});
+var tb=document.querySelector('.tb-window[data-window="'+id+'"]');
+if(tb)tb.classList.add('active');
+}
+
+function updateTaskbar(){
+var tb=document.getElementById('tbWindows');
+tb.innerHTML='';
+Object.keys(openWindows).forEach(function(id){
+if(!openWindows[id])return;
+var win=document.getElementById('win-'+id);
+if(!win)return;
+var btn=document.createElement('button');btn.className='tb-window';btn.setAttribute('data-window',id);
+btn.textContent=win.querySelector('.title-text').textContent;
+btn.onclick=function(){
+if(win.classList.contains('minimized')){win.classList.remove('minimized')}
+focusWindow(id);
+};
+tb.appendChild(btn);
+});
+var activeWin=null,highest=0;
+Object.keys(openWindows).forEach(function(id){
+var win=document.getElementById('win-'+id);
+if(win&&!win.classList.contains('minimized')&&parseInt(win.style.zIndex)>highest){highest=parseInt(win.style.zIndex);activeWin=id}
+});
+if(activeWin){
+var ab=document.querySelector('.tb-window[data-window="'+activeWin+'"]');
+if(ab)ab.classList.add('active');
+}
+}
+
+// ── Dragging ──
+var dragTarget=null,dragWin=null,dx=0,dy=0;
+document.addEventListener('mousedown',function(e){
+var tb=e.target.closest('.titlebar');
+if(!tb)return;
+var win=tb.closest('.window');
+if(!win||win.classList.contains('maximized'))return;
+var rect=win.getBoundingClientRect();
+dragTarget=tb;dragWin=win;dx=e.clientX-rect.left;dy=e.clientY-rect.top;
+win.style.zIndex=++winIndex;
+var id=win.id.replace('win-','');
+focusWindow(id);
+e.preventDefault();
+});
+document.addEventListener('mousemove',function(e){
+if(!dragTarget||!dragWin)return;
+var maxW=window.innerWidth-dragWin.offsetWidth,maxH=(window.innerHeight-48)-dragWin.offsetHeight;
+var x=Math.max(0,Math.min(e.clientX-dx,maxW)),y=Math.max(0,Math.min(e.clientY-dy,maxH));
+dragWin.style.left=x+'px';dragWin.style.top=y+'px';
+});
+document.addEventListener('mouseup',function(){dragTarget=null;dragWin=null});
+
+// ── Resizing ──
+var resizeTarget=null,resizeWin=null,rx=0,ry=0,rw=0,rh=0;
+document.addEventListener('mousedown',function(e){
+var rhEl=e.target.closest('.resize-handle');
+if(!rhEl)return;
+var win=rhEl.closest('.window');if(!win||win.classList.contains('maximized'))return;
+resizeTarget=rhEl;resizeWin=win;
+var rect=win.getBoundingClientRect();
+rx=e.clientX;ry=e.clientY;rw=rect.width;rh=rect.height;
+e.preventDefault();
+});
+document.addEventListener('mousemove',function(e){
+if(!resizeTarget||!resizeWin)return;
+var w=Math.max(280,rw+(e.clientX-rx)),h=Math.max(180,rh+(e.clientY-ry));
+resizeWin.style.width=w+'px';resizeWin.style.height=h+'px';
+});
+document.addEventListener('mouseup',function(){resizeTarget=null;resizeWin=null});
+
+// ── Click to focus ──
+document.addEventListener('mousedown',function(e){
+var win=e.target.closest('.window');
+if(!win)return;
+if(!e.target.closest('.title-btn')){
+var id=win.id.replace('win-','');
+win.style.zIndex=++winIndex;
+focusWindow(id);
+}
+});
+
+// ── Desktop icon click ──
+document.addEventListener('mousedown',function(e){
+var icon=e.target.closest('.desk-icon');
+if(!icon){document.querySelectorAll('.desk-icon.selected').forEach(function(i){i.classList.remove('selected')});return}
+icon.classList.add('selected');
+});
+
+// ── Taskbar start menu ──
+function toggleStartMenu(){
+document.getElementById('startMenu').classList.toggle('open');
+}
+function closeStartMenu(){
+document.getElementById('startMenu').classList.remove('open');
+}
+document.addEventListener('click',function(e){
+if(!e.target.closest('#startBtn')&&!e.target.closest('#startMenu')){closeStartMenu()}
+});
+
+// ── Right-click context menu ──
+document.addEventListener('contextmenu',function(e){
+if(e.target.closest('.window')||e.target.closest('#taskbar')||e.target.closest('#startMenu')){
+document.getElementById('ctxMenu').classList.remove('open');
+document.getElementById('binCtx').classList.remove('open');
+return;
+}
+e.preventDefault();
+var menu=document.getElementById('ctxMenu');
+menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
+menu.classList.add('open');
+document.getElementById('binCtx').classList.remove('open');
+});
+document.addEventListener('click',function(e){
+if(!e.target.closest('#ctxMenu')){document.getElementById('ctxMenu').classList.remove('open')}
+if(!e.target.closest('#binCtx')){document.getElementById('binCtx').classList.remove('open')}
+});
+
+function showBinContextMenu(e){
+e.preventDefault();e.stopPropagation();
+document.getElementById('ctxMenu').classList.remove('open');
+var menu=document.getElementById('binCtx');
+menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
+menu.classList.add('open');
+}
+
+function recycleAction(action){
+document.getElementById('binCtx').classList.remove('open');
+var tip=document.getElementById('binTooltip');
+if(action==='hope'){tip.textContent='Hope restored. (Mentally.)'}
+else if(action==='doubt'){tip.textContent='Self-doubt deleted. System confidence increased.'}
+else if(action==='empty'){tip.textContent='Bin emptied. Ready for more rejections! 💪'}
+}
+
+function refreshPortfolio(){
+document.getElementById('ctxMenu').classList.remove('open');
+var tip=document.getElementById('binTooltip');
+tip.textContent='Portfolio refreshed. Still hiring?';
+setTimeout(function(){tip.textContent='Empty. Keep applying.'},2000);
+}
+
+function openSysInfo(){
+document.getElementById('ctxMenu').classList.remove('open');
+openWindow('sysinfo');
+}
+
+// ── Prevent desktop icon dblclick text selection ──
+document.addEventListener('dblclick',function(e){if(e.target.closest('.desktop-icons'))e.preventDefault()});
+
+// ── Auto-open about window on first load ──
+setTimeout(function(){openWindow('about')},4200);
+
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown',function(e){
+if(e.key==='Escape'){closeStartMenu();document.getElementById('ctxMenu').classList.remove('open')}
+});
+</script>
+</body>
+</html>
