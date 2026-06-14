@@ -452,7 +452,7 @@ display:none;
 </div>
 
 <!-- Switch theme link -->
-<a href="../index.html" onclick="localStorage.removeItem('portfolioTheme')" style="position:fixed;top:16px;left:16px;z-index:9999;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(0,212,255,0.6);text-decoration:none;padding:8px 16px;border-radius:8px;background:#0c1219;border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 20px rgba(0,212,255,0.06);transition:all 0.2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.borderColor='rgba(0,212,255,0.5)';this.style.color='#00d4ff';this.style.boxShadow='0 0 30px rgba(0,212,255,0.15)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.15)';this.style.color='rgba(0,212,255,0.6)';this.style.boxShadow='0 0 20px rgba(0,212,255,0.06)'"><span style="font-size:14px">⬡</span> Switch Theme</a>
+<div id="switchThemeBtn" style="position:fixed;top:16px;left:16px;z-index:9999;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(0,212,255,0.6);padding:8px 16px;border-radius:8px;background:#0c1219;border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 20px rgba(0,212,255,0.06);display:flex;align-items:center;gap:6px;cursor:pointer;transition:opacity 0.5s ease,transform 0.5s ease" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'" onmouseover="this.style.borderColor='rgba(0,212,255,0.5)';this.style.color='#00d4ff';this.style.boxShadow='0 0 30px rgba(0,212,255,0.15)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.15)';this.style.color='rgba(0,212,255,0.6)';this.style.boxShadow='0 0 20px rgba(0,212,255,0.06)'"><span style="font-size:14px">⬡</span> Switch Theme</div>
 
 </div><!-- end desktop -->
 
@@ -703,6 +703,19 @@ setTimeout(function(){openWindow('about')},4200);
 document.addEventListener('keydown',function(e){
 if(e.key==='Escape'){closeStartMenu();document.getElementById('ctxMenu').classList.remove('open')}
 });
+
+// ── Switch Theme auto-hide ──
+var stb=document.getElementById('switchThemeBtn');
+if(stb){
+setTimeout(function(){stb.style.opacity='0';stb.style.transform='translateY(-16px)';stb.style.pointerEvents='none'},4000);
+window.addEventListener('scroll',function(){
+if(window.scrollY<10){
+stb.style.opacity='1';stb.style.transform='translateY(0)';stb.style.pointerEvents='auto';
+}else{
+stb.style.opacity='0';stb.style.transform='translateY(-16px)';stb.style.pointerEvents='none';
+}
+});
+}
 </script>
 </body>
 </html>
