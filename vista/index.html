@@ -261,6 +261,36 @@ display:none;
 .sysinfo-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
 .sysinfo-grid .si-label{color:rgba(255,255,255,0.5)}
 .sysinfo-grid .si-val{color:#e0ecff}
+
+/* ── Tray popups ── */
+.tray-popup{
+position:fixed;bottom:54px;right:8px;z-index:9995;
+background:rgba(40,50,70,0.2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+border:1px solid rgba(255,255,255,0.12);border-radius:8px;
+padding:16px;display:none;min-width:180px;
+box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+.tray-popup.open{display:block}
+.vol-slider{width:120px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;appearance:none;outline:none;cursor:pointer}
+.vol-slider::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:#5ab8ff;border:2px solid rgba(255,255,255,0.2);cursor:pointer}
+.vol-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#5ab8ff;border:2px solid rgba(255,255,255,0.2);cursor:pointer}
+.vol-label{font-size:11px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.net-row{font-size:11px;color:rgba(255,255,255,0.7);padding:4px 0;display:flex;align-items:center;gap:8px}
+.net-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;display:inline-block}
+
+/* ── Logout overlay ── */
+#logoutOverlay{
+position:fixed;inset:0;z-index:99999;
+background:#000;
+display:none;flex-direction:column;align-items:center;justify-content:center;
+opacity:0;transition:opacity 0.6s ease;
+}
+#logoutOverlay.active{display:flex;opacity:1}
+#logoutOverlay .lo-text{font-size:1.2rem;color:#fff;font-weight:300;letter-spacing:2px;margin-bottom:24px}
+#logoutOverlay .lo-bar{width:200px;height:2px;background:rgba(255,255,255,0.1);border-radius:1px;overflow:hidden}
+#logoutOverlay .lo-fill{height:100%;width:0;background:#4a90d9;animation:loFill 1.8s ease forwards}
+@keyframes loFill{to{width:100%}}
+.sm-item.sm-hidden{display:none}
 </style>
 </head>
 <body>
@@ -405,10 +435,12 @@ display:none;
 <div class="tb-windows" id="tbWindows"></div>
 <div class="tb-divider"></div>
 <div class="tb-tray">
-<span class="tray-icon">🔊</span>
-<span class="tray-icon">📶</span>
+<span class="tray-icon" id="volIcon" style="cursor:pointer" onclick="toggleVolPopup(event)">🔊</span>
+<span class="tray-icon" id="netIcon" style="cursor:pointer" onclick="toggleNetPopup(event)">📶</span>
 <span class="clock" id="clock"></span>
 </div>
+<div class="tray-popup" id="volPopup"><div class="vol-label">🔊 Volume</div><input class="vol-slider" id="volSlider" type="range" min="0" max="100" value="75" oninput="updateVol(this.value)"><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px" id="volPct">75%</div></div>
+<div class="tray-popup" id="netPopup"><div class="net-row"><span class="net-dot"></span> Wi-Fi Connected</div><div class="net-row" style="padding-left:14px;font-size:10px;color:rgba(255,255,255,0.4)">Al Mujati Network</div><div class="net-row" style="padding-left:14px;font-size:10px;color:rgba(255,255,255,0.4)">Signal: Excellent</div><div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:6px;padding-top:6px"><div class="net-row" style="font-size:10px;color:rgba(255,255,255,0.4)">IPv4: 192.168.1.42</div></div></div>
 </div>
 
 <!-- Start Menu -->
@@ -429,8 +461,8 @@ display:none;
 </div>
 </div>
 <div class="sm-footer">
-<input class="sm-search" type="text" placeholder="Search portfolio..." readonly>
-<button class="sm-power" onclick="closeStartMenu()" title="Close">⏻</button>
+<input class="sm-search" id="smSearch" type="text" placeholder="Search portfolio..." oninput="searchStartMenu(this.value)">
+<button class="sm-power" onclick="powerOff()" title="Shut down">⏻</button>
 </div>
 </div>
 
@@ -450,6 +482,9 @@ display:none;
 <div class="ctx-sep"></div>
 <div class="ctx-item" onclick="recycleAction('empty')">🧹 Empty Bin</div>
 </div>
+
+<!-- Logout overlay -->
+<div id="logoutOverlay"><div class="lo-text">Shutting down...</div><div class="lo-bar"><div class="lo-fill"></div></div></div>
 
 <!-- Switch theme link -->
 <div id="switchThemeBtn" style="position:fixed;top:16px;left:16px;z-index:9999;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(0,212,255,0.6);padding:8px 16px;border-radius:8px;background:#0c1219;border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 20px rgba(0,212,255,0.06);display:flex;align-items:center;gap:6px;cursor:pointer;transition:opacity 0.5s ease,transform 0.5s ease" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'" onmouseover="this.style.borderColor='rgba(0,212,255,0.5)';this.style.color='#00d4ff';this.style.boxShadow='0 0 30px rgba(0,212,255,0.15)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.15)';this.style.color='rgba(0,212,255,0.6)';this.style.boxShadow='0 0 20px rgba(0,212,255,0.06)'"><span style="font-size:14px">⬡</span> Switch Theme</div>
@@ -484,7 +519,8 @@ var skillGroups=[
 var pb=document.getElementById('projectsBody');
 projects.forEach(function(p){
 var el=document.createElement('div');el.className='proj-item';
-el.innerHTML='<div class="proj-name">'+p.name+'</div><div class="proj-desc">'+p.desc+'</div><div class="proj-tags">'+p.tags.map(function(t){return '<span class="proj-tag">'+t+'</span>'}).join('')+'</div>'+(p.url!='#'?'<a class="proj-btn" href="'+p.url+'" target="_blank" rel="noopener">View on GitHub →</a>':'');
+var btnLabel='View on GitHub →';if(p.url.indexOf('github.com')===-1){btnLabel='Visit Site →'}
+el.innerHTML='<div class="proj-name">'+p.name+'</div><div class="proj-desc">'+p.desc+'</div><div class="proj-tags">'+p.tags.map(function(t){return '<span class="proj-tag">'+t+'</span>'}).join('')+'</div>'+(p.url!='#'?'<a class="proj-btn" href="'+p.url+'" target="_blank" rel="noopener">'+btnLabel+'</a>':'');
 pb.appendChild(el);
 });
 var sb=document.getElementById('skillsBody');
@@ -707,6 +743,49 @@ setTimeout(function(){openWindow('about')},4200);
 document.addEventListener('keydown',function(e){
 if(e.key==='Escape'){closeStartMenu();document.getElementById('ctxMenu').classList.remove('open')}
 });
+
+// ── Search start menu ──
+function searchStartMenu(q){
+var items=document.querySelectorAll('#startMenu .sm-item');
+q=q.toLowerCase().trim();
+items.forEach(function(item){
+var txt=item.textContent.toLowerCase();
+if(!q||txt.indexOf(q)>-1){item.classList.remove('sm-hidden')}else{item.classList.add('sm-hidden')}
+});
+}
+
+// ── Volume popup ──
+function toggleVolPopup(e){
+e.stopPropagation();
+document.getElementById('netPopup').classList.remove('open');
+document.getElementById('volPopup').classList.toggle('open');
+}
+function updateVol(val){document.getElementById('volPct').textContent=val+'%'}
+
+// ── Network popup ──
+function toggleNetPopup(e){
+e.stopPropagation();
+document.getElementById('volPopup').classList.remove('open');
+document.getElementById('netPopup').classList.toggle('open');
+}
+
+// ── Close tray popups on outside click ──
+document.addEventListener('click',function(e){
+if(!e.target.closest('#volPopup')&&!e.target.closest('#volIcon')){document.getElementById('volPopup').classList.remove('open')}
+if(!e.target.closest('#netPopup')&&!e.target.closest('#netIcon')){document.getElementById('netPopup').classList.remove('open')}
+});
+
+// ── Power off ──
+function powerOff(){
+closeStartMenu();
+var ov=document.getElementById('logoutOverlay');
+ov.classList.add('active');
+setTimeout(function(){
+ov.classList.remove('active');
+localStorage.removeItem('portfolioTheme');
+window.location.href='../index.html';
+},2200);
+}
 
 // ── Switch Theme auto-hide ──
 var stb=document.getElementById('switchThemeBtn');
