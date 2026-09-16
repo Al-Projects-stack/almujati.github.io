@@ -46,6 +46,21 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
 - Both tray popups close on outside click
 - Fixed project button labels: "View on GitHub →" for GitHub URLs, "Visit Site →" for external URLs, hidden for '#'
 
+### Session 5 — Work Preference & Mobile-Friendly Vista
+- Updated `cyber/index.html:1663` work preference from "Remote / Hybrid" to "Remote / Hybrid / In office"
+- Replaced Vista "desktop only" warning (`vista/index.html:15-44`) with a full mobile layout: Vista-branded header, About, Projects (cards with tags/buttons), Skills (grouped tags), Contact, and theme switch links — populated from same `projects`/`skillGroups` arrays, with `html,body{overflow:auto}` fix so it scrolls
+
+### Session 6 — Rebrand to AI Engineer
+- Rewrote hero across both themes from Backend/Cloud to AI focus:
+  - `cyber/index.html:1456-1463` hero: "Backend & Cloud Engineer. Reliable systems." → "AI Engineer. Production-ready AI systems." + new hero-desc about LLM integrations, RAG pipelines, vector DBs, AI agents, containerised model deployments on Azure
+  - `cyber/index.html:2242` typewriter words: `['Reliable','Scalable',...]` → `['LLM-powered','RAG-native','Agent-driven','Cloud-native','Production-ready']`
+  - `vista/index.html:410-412` desktop About window + `vista/index.html:331-332` mobile About: subtitle "Backend Developer & AI Engineer" → "AI Engineer" and matching AI-focused description
+
+### Session 7 — Sewandgrow Past Tense
+- Kept Sewandgrow Website as a project in both themes but rewrote to past tense (no longer current employment):
+  - `cyber/index.html:1830-1838` + `vista/index.html:548` shortDesc/fullDesc/problem: "maintained under an ongoing client contract" → "built and maintained under a past client contract" (and matching tense fixes)
+  - Removed `cyber/index.html:1513-1527` "Currently working remotely at Sewandgrow" paragraph and the `2025 Remote Developer · Sewandgrow` timeline entry
+
 ---
 
 ## File Structure
