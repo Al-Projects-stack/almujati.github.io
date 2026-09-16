@@ -1052,10 +1052,15 @@ window.location.href='../index.html';
 }
 
 // ── Vista sounds (Web Audio, no files) ──
-var audioCtx=null;
-function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)()}
+var audioCtx=null,startupPlayed=false;
+function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+function unlockAudio(){
+try{ensureAudio();if(!startupPlayed){startupPlayed=true;setTimeout(function(){playVistaSound('startup')},120)}}catch(e){}
+document.removeEventListener('click',unlockAudio);document.removeEventListener('keydown',unlockAudio);
+}
+document.addEventListener('click',unlockAudio);document.addEventListener('keydown',unlockAudio);
 function playVistaSound(kind){
-try{ensureAudio();if(audioCtx.state==='suspended')audioCtx.resume();var v=document.getElementById('volSlider');var vol=v?parseInt(v.value)/100:0.75;if(vol<0.02)return;
+try{ensureAudio();var v=document.getElementById('volSlider');var vol=v?parseInt(v.value)/100:0.75;if(vol<0.02)return;if(audioCtx.state==='suspended')return;
 var o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);
 g.gain.value=vol*0.18;
 if(kind==='open'){o.frequency.value=720;o.type='sine';g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.22);o.start();o.stop(audioCtx.currentTime+0.22)}
@@ -1069,7 +1074,7 @@ else if(kind==='balloon'){o.frequency.value=880;o.type='sine';g.gain.value=vol*0
 (function(){var g=document.getElementById('cursorGlow');if(!g)return;document.addEventListener('mousemove',function(e){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';g.classList.add('on')});document.addEventListener('mouseleave',function(){g.classList.remove('on')})})();
 
 // ── Boot cross-fade + startup sound ──
-(function(){var b=document.getElementById('boot');if(!b)return;b.addEventListener('transitionend',function(){playVistaSound('startup');showBalloon('👋','Welcome','Vista portfolio loaded. Try the Sidebar, Start Menu, or right-click the desktop.','ok')})})();
+(function(){var b=document.getElementById('boot');if(!b)return;b.addEventListener('transitionend',function(){showBalloon('👋','Welcome','Vista portfolio loaded. Click anywhere to enable sounds, then try the Sidebar or Start Menu.','ok')})})();
 
 // ── Explorer Projects filter + view toggle ──
 var projView='list';
