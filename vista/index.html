@@ -64,7 +64,7 @@ transition:opacity 0.6s ease;
 /* ── Desktop ── */
 .desktop{position:fixed;inset:0;z-index:0}
 
-/* Vista wallpaper — authentic image + subtle overlay */
+/* Vista wallpaper, authentic image + subtle overlay */
 .wallpaper{
 position:fixed;inset:0;z-index:-1;
 background:#0e4a3a url('backgroundmp.jpg') center/cover no-repeat fixed;
@@ -87,7 +87,7 @@ text-shadow:0 1px 2px rgba(0,0,0,0.8),0 0 1px rgba(0,0,0,0.6);
 .desk-icon .ico{font-size:36px;line-height:1;margin-bottom:2px;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.6)) drop-shadow(0 1px 1px rgba(0,0,0,0.5))}
 .desk-icon .ico svg{width:40px;height:40px;display:block}
 
-/* ── Aero glass windows — Vista Frutiger ── */
+/* ── Aero glass windows, Vista Frutiger ── */
 .window{
 position:absolute;
 background:rgba(215,230,245,0.11);
@@ -182,7 +182,7 @@ color:rgba(255,255,255,0.7);font-size:11px;padding:3px 10px;border-radius:4px;
 .bin-item:hover{background:rgba(255,255,255,0.06)}
 .bin-item .bi{font-size:20px}
 
-/* ── Taskbar — Vista glossy black glass ── */
+/* ── Taskbar, Vista glossy black glass ── */
 #taskbar{
 position:fixed;bottom:0;left:0;right:0;z-index:9990;height:42px;
 background:linear-gradient(180deg,rgba(75,75,82,0.96) 0%,rgba(38,38,42,0.98) 10%,rgba(20,20,24,0.99) 50%,rgba(0,0,0,0.99) 100%);
@@ -225,7 +225,7 @@ display:flex;align-items:center;gap:6px;white-space:nowrap;
 .tb-tray .tray-icon:hover{transform:scale(1.12)}
 .tb-tray .clock{font-size:11px;cursor:default;font-family:'Segoe UI',sans-serif;min-width:52px;text-align:right;line-height:1.15;text-shadow:0 1px 1px rgba(0,0,0,0.6)}
 
-/* ── Start Menu — Vista two-pane Frutiger ── */
+/* ── Start Menu, Vista two-pane Frutiger ── */
 #startMenu{
 position:fixed;bottom:42px;left:0;z-index:9989;
 width:400px;max-height:520px;
@@ -257,7 +257,7 @@ display:none;flex-direction:column;overflow:hidden;
 .sm-power{width:30px;height:28px;border:1px solid rgba(255,255,255,0.14);border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03));color:rgba(255,255,255,0.85);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.12s;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1)}
 .sm-power:hover{background:linear-gradient(180deg,rgba(255,90,90,0.28),rgba(200,30,30,0.22));color:#fff;border-color:rgba(255,80,80,0.35);box-shadow:0 0 8px rgba(255,40,40,0.25)}
 
-/* ── Sidebar — Vista Gadgets ── */
+/* ── Sidebar, Vista Gadgets ── */
 #sidebar{position:fixed;top:0;right:0;bottom:42px;width:168px;z-index:5;background:linear-gradient(90deg,rgba(0,0,0,0.0) 0%,rgba(0,0,0,0.08) 18%,rgba(20,30,45,0.42) 100%);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-left:1px solid rgba(255,255,255,0.09);display:flex;flex-direction:column;gap:12px;padding:14px 10px;pointer-events:none}
 .gadget{pointer-events:auto;background:linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05));backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.16);border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.22);padding:12px;text-align:center}
 .gadget-clock-time{font-size:1.55rem;font-weight:300;color:#fff;letter-spacing:-0.5px;text-shadow:0 1px 4px rgba(0,0,0,0.5);font-family:'Segoe UI',sans-serif}
@@ -439,9 +439,9 @@ opacity:0;transition:opacity 0.6s ease;
 <div id="balloonBox"></div>
 <div id="peek"><div class="peek-title" id="peekTitle"></div><div class="peek-body" id="peekBody"></div></div>
 <div id="calBalloon"><div class="cal-head" id="calHead"></div><div class="cal-grid" id="calGrid"></div></div>
-<div id="trayMore"><div class="tray-more-item" onclick="showBalloon('🔒','Windows Security','UAC shield — portfolio is verified.','warn');document.getElementById('trayMore').classList.remove('open')">🛡️ Windows Security</div><div class="tray-more-item" onclick="openWindow('terminal');document.getElementById('trayMore').classList.remove('open')">💻 Command Prompt</div><div class="tray-more-item" onclick="document.getElementById('trayMore').classList.remove('open')">⚙️ Gadgets</div></div>
+<div id="trayMore"><div class="tray-more-item" onclick="showBalloon('🔒','Windows Security','UAC shield, portfolio is verified.','warn');document.getElementById('trayMore').classList.remove('open')">🛡️ Windows Security</div><div class="tray-more-item" onclick="openWindow('terminal');document.getElementById('trayMore').classList.remove('open')">💻 Command Prompt</div><div class="tray-more-item" onclick="document.getElementById('trayMore').classList.remove('open')">⚙️ Gadgets</div></div>
 <div id="uac"><div class="uac-card"><div class="uac-head">🛡️ User Account Control</div><div class="uac-body"><strong>Do you want to allow the following program to make changes?</strong><br><br>Program: <strong>Change Theme</strong><br>Publisher: Al Mujati<br><br>Windows needs your permission to continue.</div><div class="uac-btns"><button class="exp-btn" onclick="document.getElementById('uac').classList.remove('open')">Cancel</button><button class="exp-btn active" onclick="document.getElementById('uac').classList.remove('open');localStorage.removeItem('portfolioTheme');window.location.href='../index.html'">Allow</button></div></div></div>
-<div id="bsod" onclick="this.classList.remove('open')"><div class="bsod-title">:( &nbsp;Your PC ran into a problem</div><div class="bsod-msg">Stop code: HUSTLE_OVERFLOW<br><br>We’re just kidding — click anywhere to restart the desktop. Konami code detected. Nice try.<br><br>For more information, visit https://github.com/Al-Projects-stack</div><div class="bsod-hint">Press any key or click to recover…</div></div>
+<div id="bsod" onclick="this.classList.remove('open')"><div class="bsod-title">:( &nbsp;Your PC ran into a problem</div><div class="bsod-msg">Stop code: HUSTLE_OVERFLOW<br><br>We’re just kidding, click anywhere to restart the desktop. Konami code detected. Nice try.<br><br>For more information, visit https://github.com/Al-Projects-stack</div><div class="bsod-hint">Press any key or click to recover…</div></div>
 
 <div class="mobile-warn" id="mobilePortfolio">
 <div class="mhdr">
@@ -450,10 +450,10 @@ opacity:0;transition:opacity 0.6s ease;
 </div>
 <div class="msection" id="mAbout">
 <h2>About</h2>
-<p><strong>Al Mujati</strong> — Full Stack Software Engineer</p>
-<p style="margin-top:8px">Software Engineer based in Johannesburg, South Africa. I build backend systems, web apps, and cloud infrastructure — from REST APIs and databases to Docker and Azure — with LLM/RAG integrations where they add real value. Focused on performance, reliability, and clean architecture.</p>
-<p style="margin-top:8px"><strong>🎓</strong> BSc Computer Science · BSc Honours Security &amp; Network Engineering — Eduvos</p>
-<p style="margin-top:8px"><strong>⚡ Currently building:</strong> tinyllm — a decoder-only transformer LLM from scratch in PyTorch</p>
+<p><strong>Al Mujati</strong>, Full Stack Software Engineer</p>
+<p style="margin-top:8px">Software Engineer based in Johannesburg, South Africa. I build backend systems, web apps, and cloud infrastructure, from REST APIs and databases to Docker and Azure, with LLM/RAG integrations where they add real value. Focused on performance, reliability, and clean architecture.</p>
+<p style="margin-top:8px"><strong>🎓</strong> BSc Computer Science · BSc Honours Security &amp; Network Engineering, Eduvos</p>
+<p style="margin-top:8px"><strong>⚡ Currently building:</strong> tinyllm, a decoder-only transformer LLM from scratch in PyTorch</p>
 </div>
 <div class="msection" id="mProjects">
 <h2>Projects</h2>
@@ -520,13 +520,13 @@ opacity:0;transition:opacity 0.6s ease;
 <div class="gadget">
 <div class="gadget-title">◷ Clock</div>
 <div class="gadget-clock-time" id="gadgetTime">--:--</div>
-<div class="gadget-clock-date" id="gadgetDate">—</div>
+<div class="gadget-clock-date" id="gadgetDate">,</div>
 </div>
 <div class="gadget">
 <div class="gadget-title">⚡ Hustle Meter</div>
 <div style="font-size:10px;color:rgba(255,255,255,0.6)">Applications → Interviews</div>
 <div class="hustle-bar"><div class="hustle-fill" id="hustleFill"></div></div>
-<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">78% — Keep grinding</div>
+<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">78%, Keep grinding</div>
 </div>
 <div class="gadget">
 <div class="gadget-title">🖼️ Slideshow</div>
@@ -563,10 +563,10 @@ opacity:0;transition:opacity 0.6s ease;
 <div class="window-body">
 <h2>Al Mujati</h2>
 <p style="color:#8ab8ff;font-size:14px;margin-bottom:10px">Full Stack Software Engineer</p>
-<p>Software Engineer based in Johannesburg, South Africa. I build backend systems, web apps, and cloud infrastructure — from REST APIs and databases to Docker and Azure — with LLM/RAG integrations where they add real value. Focused on performance, reliability, and clean architecture.</p>
+<p>Software Engineer based in Johannesburg, South Africa. I build backend systems, web apps, and cloud infrastructure, from REST APIs and databases to Docker and Azure, with LLM/RAG integrations where they add real value. Focused on performance, reliability, and clean architecture.</p>
 <p style="margin-top:10px"><strong>📍</strong> Johannesburg, South Africa</p>
-<p><strong>🎓</strong> BSc Computer Science (completed) · BSc Honours Security &amp; Network Engineering (in progress) — Eduvos</p>
-<p style="margin-top:12px;padding:10px;background:rgba(74,144,217,0.1);border-radius:6px;border:1px solid rgba(74,144,217,0.15)"><strong>⚡ Currently building:</strong> tinyllm — a decoder-only transformer LLM from scratch in PyTorch</p>
+<p><strong>🎓</strong> BSc Computer Science (completed) · BSc Honours Security &amp; Network Engineering (in progress), Eduvos</p>
+<p style="margin-top:12px;padding:10px;background:rgba(74,144,217,0.1);border-radius:6px;border:1px solid rgba(74,144,217,0.15)"><strong>⚡ Currently building:</strong> tinyllm, a decoder-only transformer LLM from scratch in PyTorch</p>
 </div>
 <div class="resize-handle"></div>
 </div>
@@ -1144,8 +1144,8 @@ printTerm('C:\\Users\\Al&gt; '+cmd,'cmd');
 var q=cmd.toLowerCase();
 if(q==='help')printTerm('Commands: help, clear, about, projects, skills, contact, github, date, whoami, konami','ok');
 else if(q==='clear')document.getElementById('termOut').innerHTML='';
-else if(q==='about')printTerm('Full Stack Software Engineer — Johannesburg. Backend, frontend, cloud & AI where it helps.','ok');
-else if(q==='projects')projects.forEach(function(p){printTerm('• '+p.name+' — '+p.desc,'')});
+else if(q==='about')printTerm('Full Stack Software Engineer, Johannesburg. Backend, frontend, cloud & AI where it helps.','ok');
+else if(q==='projects')projects.forEach(function(p){printTerm('• '+p.name+', '+p.desc,'')});
 else if(q==='skills')skillGroups.forEach(function(g){printTerm(g.label+': '+g.items.join(', '),'')});
 else if(q==='contact')printTerm('almujati02@gmail.com · github.com/Al-Projects-stack','ok');
 else if(q==='github')window.open('https://github.com/Al-Projects-stack','_blank');
