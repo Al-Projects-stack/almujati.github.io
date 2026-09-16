@@ -61,6 +61,11 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
   - `cyber/index.html:1830-1838` + `vista/index.html:548` shortDesc/fullDesc/problem: "maintained under an ongoing client contract" → "built and maintained under a past client contract" (and matching tense fixes)
   - Removed `cyber/index.html:1513-1527` "Currently working remotely at Sewandgrow" paragraph and the `2025 Remote Developer · Sewandgrow` timeline entry
 
+### Session 8 — Title to Software Engineer
+- Rebranded role titles from "AI Engineer" → "Software Engineer" per request (broader positioning):
+  - `cyber/index.html:1458-1459` hero h1: "AI Engineer. Production-ready AI systems." → "Software Engineer. Production-ready systems."
+  - `vista/index.html:331-332` mobile About + `vista/index.html:411-412` desktop About window: subtitle + opening line "AI Engineer/engineer" → "Software Engineer" (descriptions kept LLM/RAG/cloud wording)
+
 ---
 
 ## File Structure
