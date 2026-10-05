@@ -507,6 +507,7 @@ opacity:0;transition:opacity 0.6s ease;
 
 <!-- Boot screen -->
 <div id="boot">
+<img src="start-orb.jpg" alt="Windows" style="width:84px;height:84px;border-radius:50%;margin-bottom:14px;opacity:0;animation:fadeIn 0.8s ease 0.2s forwards;box-shadow:0 0 32px rgba(74,144,217,0.5)">
 <img src="vista-flag.webp" alt="Windows Vista" style="width:230px;max-width:60vw;margin-bottom:10px;opacity:0;animation:fadeIn 0.8s ease 0.3s forwards;border-radius:4px">
 <div class="boot-sub" style="margin-bottom:24px">Al Mujati</div>
 <div class="boot-bar-wrap"><div class="boot-bar-fill"></div></div>
@@ -1117,13 +1118,18 @@ if(!e.target.closest('#volPopup')&&!e.target.closest('#volIcon')){document.getEl
 if(!e.target.closest('#netPopup')&&!e.target.closest('#netIcon')){document.getElementById('netPopup').classList.remove('open')}
 });
 
-// ── Power off ──
+// ── Power off (overlay stays on through redirect, no desktop flash) ──
+var poweringOff=false;
 function powerOff(){
+if(poweringOff)return;poweringOff=true;
 closeStartMenu();
+var sm=document.getElementById('startMenu');if(sm)sm.classList.remove('open');
+var ls=document.getElementById('loginScreen');if(ls)ls.classList.remove('open');
 var ov=document.getElementById('logoutOverlay');
+var fill=ov.querySelector('.lo-fill');if(fill){fill.style.animation='none';void fill.offsetWidth;fill.style.animation='';}
 ov.classList.add('active');
+try{playVistaSound('close')}catch(e){}
 setTimeout(function(){
-ov.classList.remove('active');
 localStorage.removeItem('portfolioTheme');
 window.location.href='../index.html';
 },2200);
