@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:'Segoe UI','Segoe UI Variable','Inter',system-ui,-apple-system,sans-serif;user-select:none;-webkit-user-select:none;background:#06121f}
+html,body{height:100%;overflow:hidden;font-family:'Segoe UI','Segoe UI Variable','Inter',system-ui,-apple-system,sans-serif;user-select:none;-webkit-user-select:none;background:#0e4a3a url('backgroundmp.jpg') center/cover no-repeat fixed}
 
 /* ── Mobile layout ── */
 @media(max-width:820px){
@@ -557,7 +557,9 @@ opacity:0;transition:opacity 0.6s ease;
 </div>
 </div>
 
-<!-- Wallpaper (outside desktop so boot/login/welcome transitions never flash white) -->
+<div class="desktop" id="desktop">
+
+<!-- Wallpaper -->
 <div class="wallpaper" id="wallpaper">
 <svg class="aurora-svg" viewBox="0 0 1440 900" preserveAspectRatio="none">
 <defs>
@@ -587,8 +589,6 @@ opacity:0;transition:opacity 0.6s ease;
 </ellipse>
 </svg>
 </div>
-
-<div class="desktop" id="desktop">
 
 <!-- Sidebar gadgets -->
 <div id="sidebar">
