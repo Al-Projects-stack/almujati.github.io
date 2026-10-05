@@ -66,6 +66,14 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
   - `cyber/index.html:1458-1459` hero h1: "AI Engineer. Production-ready AI systems." → "Software Engineer. Production-ready systems."
   - `vista/index.html:331-332` mobile About + `vista/index.html:411-412` desktop About window: subtitle + opening line "AI Engineer/engineer" → "Software Engineer" (descriptions kept LLM/RAG/cloud wording)
 
+### Session 9 — Full-stack rebalance + dash cleanup
+- `cyber/index.html` hero-desc/about/title/meta + `vista/index.html` About/terminal reworded from AI-only to full-stack (backend, web, DB, Docker, Azure, AI where it adds value); typewriter `twWords` → Thoughtful, Clean, Reliable, Maintainable, Production-ready; removed all en/em dashes in live files (commas instead)
+
+### Session 10 — Vista login + real orb/flag/profile images
+- New `vista/profile.jpg` (512px, 58KB, from uploaded photo), `vista/start-orb.jpg`, `vista/vista-flag.webp` (renamed from space-filled uploads)
+- Start orb now uses `start-orb.jpg`; boot screen uses `vista-flag.webp`; Start Menu header uses flag bg + `profile.jpg` avatar tile
+- New `#loginScreen`: blurred-wallpaper logon with profile avatar, "Al Mujati / Full Stack Software Engineer", fake password (Enter), Welcome spinner, footer clock + Switch user/Restart/Shut down; flow is boot → login → desktop (desktop gated via `body.logged-in`; About auto-opens post-login; mobile skips login)
+
 ---
 
 ## File Structure
