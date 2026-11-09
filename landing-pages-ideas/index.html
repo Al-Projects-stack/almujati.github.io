@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landing Pages Ideas, Al Mujati</title>
+<style>
+  :root{--bg:#0b0e14;--card:#121722;--card2:#161c28;--line:#243040;--ink:#e8ecf4;--dim:#93a0b4;--accent:#ff8a5b;--accent2:#45e0d0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(800px 500px at 85% -10%,rgba(255,138,91,.08),transparent 60%),radial-gradient(700px 500px at 0% 10%,rgba(69,224,208,.06),transparent 55%)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  header{padding:64px 0 36px}
+  .back{display:inline-flex;align-items:center;gap:8px;color:var(--dim);text-decoration:none;font-size:.86rem;margin-bottom:26px;transition:.2s}
+  .back:hover{color:var(--accent2)}
+  .eyebrow{font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-size:clamp(2.1rem,5vw,3.2rem);line-height:1.05;margin:12px 0 16px;letter-spacing:-.02em}
+  header p{color:var(--dim);max-width:62ch;font-size:1.05rem}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;padding:20px 0 70px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;transition:transform .25s cubic-bezier(.19,1,.22,1),border-color .25s,box-shadow .25s}
+  .card:hover{transform:translateY(-5px);border-color:var(--c);box-shadow:0 26px 50px -30px #000}
+  .swatch{height:150px;position:relative;display:flex;align-items:flex-end;padding:16px 18px;overflow:hidden}
+  .swatch .no{position:absolute;top:14px;right:16px;font-size:.78rem;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.55);font-weight:600;letter-spacing:.1em}
+  .swatch .kind{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding:5px 10px;border-radius:30px;background:rgba(0,0,0,.28);color:#fff;backdrop-filter:blur(4px)}
+  .body{padding:20px 20px 22px}
+  .body h2{font-size:1.4rem;letter-spacing:-.01em;margin-bottom:6px}
+  .body .para{color:var(--dim);font-size:.94rem;margin-bottom:14px}
+  .meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+  .meta span{font-size:.72rem;color:var(--dim);border:1px solid var(--line);padding:4px 9px;border-radius:20px}
+  .go{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.9rem;color:var(--c)}
+  .go .ar{transition:transform .25s}
+  .card:hover .go .ar{transform:translateX(5px)}
+  /* per-card swatches echoing each page's identity */
+  .s-serum{--c:#b08d3f;background:radial-gradient(120% 90% at 50% 10%,#e3e7dd,transparent 60%),linear-gradient(160deg,#8fa088,#5e6e59)}
+  .s-coffee{--c:#e0a42a;background:linear-gradient(160deg,#16322b,#0f241d)}
+  .s-watch{--c:#45e0d0;background:linear-gradient(160deg,#141922,#0a0c10)}
+  .s-pre{--c:#f24405;background:repeating-linear-gradient(115deg,#141414 0 42px,#1b1b1b 42px 43px)}
+  .s-candle{--c:#c9765a;background:linear-gradient(160deg,#7c3a30,#5f2a22)}
+  footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--dim);font-size:.84rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer a{color:var(--dim)}footer a:hover{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="../">← Back to portfolio</a>
+    <div class="eyebrow">Design &amp; Front-End</div>
+    <h1>Landing Pages Ideas</h1>
+    <p>Five self-contained Shopify landing-page concepts, one per product niche. Each is a single HTML file with fonts embedded, its own visual identity and motion language, and tactile commerce controls. Every one deliberately avoids the usual "AI-generated" design tells.</p>
+  </header>
+
+  <main class="grid">
+    <a class="card" href="serum.html">
+      <div class="swatch s-serum"><span class="no">01</span><span class="kind">Monograph</span></div>
+      <div class="body">
+        <h2>Meridian Serum</h2>
+        <p class="para">A bio-retinol night serum presented as a clinical formulation monograph, data table, margin notes, self-drawing result bars.</p>
+        <div class="meta"><span>Bodoni Moda</span><span>Editorial</span><span>SVG</span></div>
+        <span class="go">View page <span class="ar">→</span></span>
+      </div>
+    </a>
+
+    <a class="card" href="coffee.html">
+      <div class="swatch s-coffee"><span class="no">02</span><span class="kind">Broadsheet</span></div>
+      <div class="body">
+        <h2>Northbound Roasters</h2>
+        <p class="para">A small-batch coffee roaster as a newspaper broadsheet, nameplate, leader-dot menu, traceable lot-book ledger.</p>
+        <div class="meta"><span>Abril Fatface</span><span>Print</span><span>Grind toggle</span></div>
+        <span class="go">View page <span class="ar">→</span></span>
+      </div>
+    </a>
+
+    <a class="card" href="watch.html">
+      <div class="swatch s-watch"><span class="no">03</span><span class="kind">Datasheet</span></div>
+      <div class="body">
+        <h2>AXIS Pulse</h2>
+        <p class="para">A health smartwatch as an engineering datasheet, a schematic that draws itself, spec tables, live telemetry, an ordering guide.</p>
+        <div class="meta"><span>Chakra Petch</span><span>Technical</span><span>Live SVG</span></div>
+        <span class="go">View page <span class="ar">→</span></span>
+      </div>
+    </a>
+
+    <a class="card" href="preworkout.html">
+      <div class="swatch s-pre"><span class="no">04</span><span class="kind">Facts Panel</span></div>
+      <div class="body">
+        <h2>VOLT Pre-Workout</h2>
+        <p class="para">A supplement built around a real Supplement Facts panel, poster numerals that count up, flavor &amp; plan toggles, a quantity stepper.</p>
+        <div class="meta"><span>Barlow Condensed</span><span>Direct-response</span><span>Commerce</span></div>
+        <span class="go">View page <span class="ar">→</span></span>
+      </div>
+    </a>
+
+    <a class="card" href="candle.html">
+      <div class="swatch s-candle"><span class="no">05</span><span class="kind">Catalogue</span></div>
+      <div class="body">
+        <h2>Dusk Atelier</h2>
+        <p class="para">A hand-poured candle brand as a daylight retail catalogue, oxblood colour field, ambient flame flicker, an inline email signup.</p>
+        <div class="meta"><span>Bricolage Grotesque</span><span>Boutique</span><span>Forms</span></div>
+        <span class="go">View page <span class="ar">→</span></span>
+      </div>
+    </a>
+  </main>
+
+  <footer>
+    <span>© 2026 Al Takura Mujati</span>
+    <span><a href="../cyber/">Cyber edition</a> · <a href="../vista/">Vista edition</a></span>
+  </footer>
+</div>
+</body>
+</html>
