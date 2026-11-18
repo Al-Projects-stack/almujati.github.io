@@ -74,6 +74,17 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
 - Start orb now uses `start-orb.jpg`; boot screen uses `vista-flag.webp`; Start Menu header uses flag bg + `profile.jpg` avatar tile
 - New `#loginScreen`: blurred-wallpaper logon with profile avatar, "Al Mujati / Full Stack Software Engineer", fake password (Enter), Welcome spinner, footer clock + Switch user/Restart/Shut down; flow is boot → login → desktop (desktop gated via `body.logged-in`; About auto-opens post-login; mobile skips login)
 
+### Session 11 — Vista bug sweep
+- `#logoutOverlay` moved outside `.desktop` so "Shutting down..." shows when shutting down from the login screen
+- `#balloonBox` z-index raised above the login screen ("Switch user" balloon was hidden); tip balloons now start after login; balloons skipped on mobile
+- Switch Theme button: starts hidden, shows for 4s after login, reappears when the mouse nears the top-left; moved to `left:100px` so it no longer covers the desktop icons
+- Desktop right-click menu ignored on mobile and before login (long-press on links works again); context menus clamped to the viewport
+- Volume/Wi-Fi popups moved out of `#taskbar` (nested backdrop-filter made them see-through) and given a darker glass background
+- Start Menu avatar no longer prints "AM" over the photo; startup chime plays once (on login only); BSOD closes on any key; terminal escapes typed input; clocks tick on the minute; maximized windows sit flush on the 42px taskbar
+- Tray "Gadgets" toggles the sidebar; Recycle Bin copy fixed; GitHub "20+ repositories"; Docker de-duplicated in Skills; mobile education matches desktop
+- Removed the Hustle Meter (Applications → Interviews) gadget
+- Slideshow gadget → "Project Gallery": 8 project screenshots in `vista/gallery/` (480×300 JPGs, ~150 KB total; CarIQ + CV Automation from repo `docs/`, Landing Pages/Sewandgrow/Finance Dashboard/GitHub Dashboard captured with headless Chrome, Chat/Weather resized from `cyber/`), built from a `gallery` array with captions and clickable dots; clicking the image opens Projects filtered to that project. Profile photo no longer in the slideshow
+
 ---
 
 ## File Structure

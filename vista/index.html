@@ -145,7 +145,8 @@ overflow:hidden;
 }
 .window.active{display:flex;flex-direction:column}
 .window.minimized{display:none!important}
-.window.maximized{border-radius:0!important;top:0!important;left:0!important;width:100%!important;height:calc(100% - 48px)!important}
+.window.maximized{border-radius:0!important;top:0!important;left:0!important;width:100%!important;height:calc(100% - 42px)!important}
+body.no-sidebar #sidebar{display:none}
 .titlebar{
 display:flex;align-items:center;height:32px;padding:0 4px 0 12px;
 background:linear-gradient(180deg,rgba(255,255,255,0.38) 0%,rgba(190,215,245,0.24) 46%,rgba(110,160,220,0.28) 50%,rgba(70,125,195,0.34) 100%);
@@ -355,7 +356,7 @@ display:none;
 /* ── Tray popups ── */
 .tray-popup{
 position:fixed;bottom:54px;right:8px;z-index:9995;
-background:rgba(40,50,70,0.2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+background:rgba(28,38,56,0.62);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
 border:1px solid rgba(255,255,255,0.12);border-radius:8px;
 padding:16px;display:none;min-width:180px;
 box-shadow:0 8px 24px rgba(0,0,0,0.4);
@@ -423,7 +424,7 @@ opacity:0;transition:opacity 0.6s ease;
 .peek-body{flex:1;padding:8px;font-size:11px;color:rgba(255,255,255,0.85);overflow:hidden;line-height:1.4}
 
 /* ── Balloon toast ── */
-#balloonBox{position:fixed;bottom:50px;right:14px;z-index:9997;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+#balloonBox{position:fixed;bottom:50px;right:14px;z-index:99995;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .balloon{pointer-events:auto;min-width:260px;max-width:300px;background:linear-gradient(180deg,#ffffe1 0%,#fff9c2 100%);border:1px solid #d4b84a;border-radius:7px;box-shadow:0 6px 20px rgba(0,0,0,0.35);padding:10px 12px;display:flex;gap:10px;animation:balIn 0.22s ease;cursor:pointer;pointer-events:auto}
 .balloon.out{animation:balOut 0.18s ease forwards}
 .balloon-ico{font-size:20px;flex-shrink:0}
@@ -432,15 +433,14 @@ opacity:0;transition:opacity 0.6s ease;
 @keyframes balIn{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes balOut{to{opacity:0;transform:translateY(6px) scale(0.98)}}
 
-/* ── Hustle meter + slideshow gadgets ── */
-.hustle-bar{height:8px;background:rgba(0,0,0,0.25);border-radius:4px;overflow:hidden;margin-top:8px;border:1px solid rgba(255,255,255,0.12)}
-.hustle-fill{height:100%;width:78%;background:linear-gradient(90deg,#4a90d9,#5ab8ff 60%,#7ac8ff);border-radius:4px;animation:hustlePulse 2s ease infinite}
-@keyframes hustlePulse{0%,100%{opacity:1}50%{opacity:0.85}}
-.slide-frame{height:84px;border-radius:5px;overflow:hidden;background:#0f1419;border:1px solid rgba(255,255,255,0.10);margin-top:8px;position:relative}
-.slide-frame img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.4s;position:absolute;inset:0}
+/* ── Project gallery gadget ── */
+.slide-frame{aspect-ratio:16/10;border-radius:5px;overflow:hidden;background:#0f1419;border:1px solid rgba(255,255,255,0.10);position:relative;cursor:pointer}
+.slide-frame img{width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity 0.4s;position:absolute;inset:0}
 .slide-frame img.on{opacity:1}
-.slide-dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
-.slide-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.25)}
+.slide-frame:hover{border-color:rgba(120,180,255,0.45)}
+.slide-cap{font-size:10px;color:rgba(255,255,255,0.8);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slide-dots{display:flex;gap:4px;justify-content:center;margin-top:5px}
+.slide-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.25);border:none;padding:0;cursor:pointer}
 .slide-dot.on{background:#5ab8ff}
 
 /* ── Tray chevron + overflow ── */
@@ -481,9 +481,11 @@ opacity:0;transition:opacity 0.6s ease;
 <div id="balloonBox"></div>
 <div id="peek"><div class="peek-title" id="peekTitle"></div><div class="peek-body" id="peekBody"></div></div>
 <div id="calBalloon"><div class="cal-head" id="calHead"></div><div class="cal-grid" id="calGrid"></div></div>
-<div id="trayMore"><div class="tray-more-item" onclick="showBalloon('🔒','Windows Security','UAC shield, portfolio is verified.','warn');document.getElementById('trayMore').classList.remove('open')">🛡️ Windows Security</div><div class="tray-more-item" onclick="openWindow('terminal');document.getElementById('trayMore').classList.remove('open')">💻 Command Prompt</div><div class="tray-more-item" onclick="document.getElementById('trayMore').classList.remove('open')">⚙️ Gadgets</div></div>
+<div id="trayMore"><div class="tray-more-item" onclick="showBalloon('🔒','Windows Security','UAC shield, portfolio is verified.','warn');document.getElementById('trayMore').classList.remove('open')">🛡️ Windows Security</div><div class="tray-more-item" onclick="openWindow('terminal');document.getElementById('trayMore').classList.remove('open')">💻 Command Prompt</div><div class="tray-more-item" onclick="toggleSidebar()">⚙️ Gadgets</div></div>
 <div id="uac"><div class="uac-card"><div class="uac-head">🛡️ User Account Control</div><div class="uac-body"><strong>Do you want to allow the following program to make changes?</strong><br><br>Program: <strong>Change Theme</strong><br>Publisher: Al Mujati<br><br>Windows needs your permission to continue.</div><div class="uac-btns"><button class="exp-btn" onclick="document.getElementById('uac').classList.remove('open')">Cancel</button><button class="exp-btn active" onclick="document.getElementById('uac').classList.remove('open');localStorage.removeItem('portfolioTheme');window.location.href='../index.html'">Allow</button></div></div></div>
-<div id="bsod" onclick="this.classList.remove('open')"><div class="bsod-title">:( &nbsp;Your PC ran into a problem</div><div class="bsod-msg">Stop code: HUSTLE_OVERFLOW<br><br>We’re just kidding, click anywhere to restart the desktop. Konami code detected. Nice try.<br><br>For more information, visit https://github.com/Al-Projects-stack</div><div class="bsod-hint">Press any key or click to recover…</div></div>
+<!-- Logout overlay (outside .desktop so it shows from the login screen too) -->
+<div id="logoutOverlay"><div class="lo-text">Shutting down...</div><div class="lo-bar"><div class="lo-fill"></div></div></div>
+<div id="bsod" onclick="closeBsod()"><div class="bsod-title">:( &nbsp;Your PC ran into a problem</div><div class="bsod-msg">Stop code: HUSTLE_OVERFLOW<br><br>We’re just kidding, click anywhere to restart the desktop. Konami code detected. Nice try.<br><br>For more information, visit https://github.com/Al-Projects-stack</div><div class="bsod-hint">Press any key or click to recover…</div></div>
 
 <div class="mobile-warn" id="mobilePortfolio">
 <div class="mhdr">
@@ -494,7 +496,7 @@ opacity:0;transition:opacity 0.6s ease;
 <h2>About</h2>
 <p><strong>Al Mujati</strong>, Full Stack Software Engineer</p>
 <p style="margin-top:8px">Software Engineer based in Johannesburg, South Africa. I build backend systems, web apps, and cloud infrastructure, from REST APIs and databases to Docker and Azure, with LLM/RAG integrations where they add real value. Focused on performance, reliability, and clean architecture.</p>
-<p style="margin-top:8px"><strong>🎓</strong> BSc Computer Science · BSc Honours Security &amp; Network Engineering, Eduvos</p>
+<p style="margin-top:8px"><strong>🎓</strong> BSc Computer Science (completed) · BSc Honours Security &amp; Network Engineering (in progress), Eduvos</p>
 <p style="margin-top:8px"><strong>⚡ Currently building:</strong> tinyllm, a decoder-only transformer LLM from scratch in PyTorch</p>
 </div>
 <div class="msection" id="mProjects">
@@ -598,19 +600,10 @@ opacity:0;transition:opacity 0.6s ease;
 <div class="gadget-clock-date" id="gadgetDate">,</div>
 </div>
 <div class="gadget">
-<div class="gadget-title">⚡ Hustle Meter</div>
-<div style="font-size:10px;color:rgba(255,255,255,0.6)">Applications → Interviews</div>
-<div class="hustle-bar"><div class="hustle-fill" id="hustleFill"></div></div>
-<div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px">78%, Keep grinding</div>
-</div>
-<div class="gadget">
-<div class="gadget-title">🖼️ Slideshow</div>
-<div class="slide-frame" id="slideFrame">
-<img src="../cyber/upscaled_image.jpg" class="on" alt="">
-<img src="../cyber/image_2025-10-30_123547581.png" alt="">
-<img src="../cyber/Weather.jpg" alt="">
-</div>
-<div class="slide-dots" id="slideDots"><span class="slide-dot on"></span><span class="slide-dot"></span><span class="slide-dot"></span></div>
+<div class="gadget-title">🖼️ Project Gallery</div>
+<div class="slide-frame" id="slideFrame" title="Open in Projects"></div>
+<div class="slide-cap" id="slideCap"></div>
+<div class="slide-dots" id="slideDots"></div>
 </div>
 <div class="gadget">
 <div class="gadget-title">✦ Quick Links</div>
@@ -671,7 +664,7 @@ opacity:0;transition:opacity 0.6s ease;
 <h2>Al-Projects-stack</h2>
 <p style="margin-bottom:12px">Check out my repositories and contributions on GitHub.</p>
 <div class="contact-row"><div class="c-icon">🔗</div><a href="https://github.com/Al-Projects-stack" target="_blank" rel="noopener">github.com/Al-Projects-stack</a></div>
-<div class="contact-row"><div class="c-icon">📊</div><span style="color:rgba(255,255,255,0.6)">17+ public repositories · Active contributor</span></div>
+<div class="contact-row"><div class="c-icon">📊</div><span style="color:rgba(255,255,255,0.6)">20+ public repositories · Active contributor</span></div>
 <div style="margin-top:14px"><a class="proj-btn" href="https://github.com/Al-Projects-stack" target="_blank" rel="noopener">Open GitHub Profile →</a></div>
 </div>
 <div class="resize-handle"></div>
@@ -726,13 +719,14 @@ opacity:0;transition:opacity 0.6s ease;
 <span class="tray-icon" id="netIcon" style="cursor:pointer" onclick="toggleNetPopup(event)">📶</span>
 <div class="clock" id="clock" onclick="toggleCal(event)" style="cursor:pointer"></div>
 </div>
+</div>
+<!-- Tray popups sit outside #taskbar so their glass blur samples the desktop, not just the taskbar -->
 <div class="tray-popup" id="volPopup"><div class="vol-label">🔊 Volume</div><input class="vol-slider" id="volSlider" type="range" min="0" max="100" value="75" oninput="updateVol(this.value)"><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px" id="volPct">75%</div></div>
 <div class="tray-popup" id="netPopup"><div class="net-row"><span class="net-dot"></span> Wi-Fi Connected</div><div class="net-row" style="padding-left:14px;font-size:10px;color:rgba(255,255,255,0.4)">Al Mujati Network</div><div class="net-row" style="padding-left:14px;font-size:10px;color:rgba(255,255,255,0.4)">Signal: Excellent</div><div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:6px;padding-top:6px"><div class="net-row" style="font-size:10px;color:rgba(255,255,255,0.4)">IPv4: 192.168.1.42</div></div></div>
-</div>
 
 <!-- Start Menu -->
 <div id="startMenu">
-<div class="sm-user"><div class="sm-avatar">AM</div><div class="sm-name">Al Mujati</div></div>
+<div class="sm-user"><div class="sm-avatar" role="img" aria-label="Al Mujati"></div><div class="sm-name">Al Mujati</div></div>
 <div class="sm-body">
 <div class="sm-col-left">
 <div class="sm-item" onclick="openWindow('about');closeStartMenu()"><span class="sm-ico">👤</span>About Me</div>
@@ -770,11 +764,8 @@ opacity:0;transition:opacity 0.6s ease;
 <div class="ctx-item" onclick="recycleAction('empty')">🧹 Empty Bin</div>
 </div>
 
-<!-- Logout overlay -->
-<div id="logoutOverlay"><div class="lo-text">Shutting down...</div><div class="lo-bar"><div class="lo-fill"></div></div></div>
-
 <!-- Switch theme link -->
-<div id="switchThemeBtn" style="position:fixed;top:16px;left:16px;z-index:9999;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(0,212,255,0.6);padding:8px 16px;border-radius:8px;background:#0c1219;border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 20px rgba(0,212,255,0.06);display:flex;align-items:center;gap:6px;cursor:pointer;transition:opacity 0.5s ease,transform 0.5s ease" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'" onmouseover="this.style.borderColor='rgba(0,212,255,0.5)';this.style.color='#00d4ff';this.style.boxShadow='0 0 30px rgba(0,212,255,0.15)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.15)';this.style.color='rgba(0,212,255,0.6)';this.style.boxShadow='0 0 20px rgba(0,212,255,0.06)'"><span style="font-size:14px">⬡</span> Switch Theme</div>
+<div id="switchThemeBtn" style="position:fixed;top:16px;left:100px;z-index:9999;opacity:0;transform:translateY(-16px);pointer-events:none;font-family:'Inter','Segoe UI',sans-serif;font-size:11px;color:rgba(0,212,255,0.6);padding:8px 16px;border-radius:8px;background:#0c1219;border:1px solid rgba(0,212,255,0.15);box-shadow:0 0 20px rgba(0,212,255,0.06);display:flex;align-items:center;gap:6px;cursor:pointer;transition:opacity 0.5s ease,transform 0.5s ease" onclick="localStorage.removeItem('portfolioTheme');window.location.href='../index.html'" onmouseover="this.style.borderColor='rgba(0,212,255,0.5)';this.style.color='#00d4ff';this.style.boxShadow='0 0 30px rgba(0,212,255,0.15)'" onmouseout="this.style.borderColor='rgba(0,212,255,0.15)';this.style.color='rgba(0,212,255,0.6)';this.style.boxShadow='0 0 20px rgba(0,212,255,0.06)'"><span style="font-size:14px">⬡</span> Switch Theme</div>
 
 </div><!-- end desktop -->
 
@@ -796,7 +787,7 @@ var projects=[
 
 var skillGroups=[
 {label:'Languages',items:['Python','Java','C#','TypeScript','JavaScript','C++']},
-{label:'Backend',items:['FastAPI','Spring Boot','Node.js','.NET','REST APIs','Docker']},
+{label:'Backend',items:['FastAPI','Spring Boot','Node.js','.NET','REST APIs']},
 {label:'Frontend',items:['React','HTML5','CSS3']},
 {label:'AI & ML',items:['PyTorch','Claude API','LLM Architecture','Prompt Engineering']},
 {label:'DevOps & Cloud',items:['Docker','Azure','GitHub Actions','Render','Firebase']}
@@ -846,6 +837,9 @@ document.body.classList.add('logged-in');
 try{playVistaSound('startup')}catch(e){}
 setTimeout(function(){openWindow('about')},350);
 showBalloon('👋','Welcome','Logged in as Al Mujati. Try the Sidebar, Start Menu, or right-click the desktop.','ok');
+showSwitchBtn(4000);
+setTimeout(function(){showBalloon('💡','Tip','Right-click the desktop for Theme & Properties.','ok')},6000);
+setTimeout(function(){showBalloon('🗑️','Recycle Bin','Drag desktop icons onto the Bin, or triple-click it to give it a shake.','warn')},11000);
 },1900);
 },520);
 },900);
@@ -854,15 +848,12 @@ showBalloon('👋','Welcome','Logged in as Al Mujati. Try the Sidebar, Start Men
 // ── Clock (dual-line + gadget) ──
 function updateClock(){
 var d=new Date(),h=d.getHours().toString().padStart(2,'0'),m=d.getMinutes().toString().padStart(2,'0');
-var monthsS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
 var dateStr=(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
 var c=document.getElementById('clock');if(c)c.innerHTML='<div style="line-height:1.05;text-align:right"><div>'+h+':'+m+'</div><div style="font-size:9px;opacity:0.75">'+dateStr+'</div></div>';
 var gt=document.getElementById('gadgetTime');if(gt)gt.textContent=h+':'+m;
-var gd=document.getElementById('gadgetDate');if(gd){
-var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
-gd.textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate();
-}
+var gd=document.getElementById('gadgetDate');if(gd)gd.textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate();
 var lt=document.getElementById('loginTime');if(lt)lt.textContent=h+':'+m;
 var ld=document.getElementById('loginDate');if(ld)ld.textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate()+' '+d.getFullYear();
 if(document.getElementById('calBalloon')&&document.getElementById('calBalloon').classList.contains('open'))renderCalendar();
@@ -882,7 +873,8 @@ var total=first+daysIn,rem=(7-total%7)%7;for(var k=1;k<=rem;k++)html+='<div clas
 grid.innerHTML=html;
 }
 function toggleCal(e){e.stopPropagation();renderCalendar();document.getElementById('calBalloon').classList.toggle('open');document.getElementById('trayMore').classList.remove('open');document.getElementById('volPopup').classList.remove('open');document.getElementById('netPopup').classList.remove('open')}
-updateClock();setInterval(updateClock,30000);
+// tick on each minute boundary so the clocks never lag behind the real time
+(function tick(){updateClock();setTimeout(tick,60000-Date.now()%60000+50)})();
 
 // ── Window management ──
 var winIndex=1000;
@@ -979,7 +971,7 @@ e.preventDefault();
 });
 document.addEventListener('mousemove',function(e){
 if(!dragTarget||!dragWin)return;
-var maxW=window.innerWidth-dragWin.offsetWidth,maxH=(window.innerHeight-48)-dragWin.offsetHeight;
+var maxW=window.innerWidth-dragWin.offsetWidth,maxH=(window.innerHeight-42)-dragWin.offsetHeight;
 var x=Math.max(0,Math.min(e.clientX-dx,maxW)),y=Math.max(0,Math.min(e.clientY-dy,maxH));
 dragWin.style.left=x+'px';dragWin.style.top=y+'px';
 });
@@ -1034,16 +1026,16 @@ if(!e.target.closest('#startBtn')&&!e.target.closest('#startMenu')){closeStartMe
 
 // ── Right-click context menu ──
 document.addEventListener('contextmenu',function(e){
+// leave the browser's own menu alone on phones (long-press to copy links) and before login
+if(isMobileView()||!document.body.classList.contains('logged-in'))return;
 if(e.target.closest('.window')||e.target.closest('#taskbar')||e.target.closest('#startMenu')){
 document.getElementById('ctxMenu').classList.remove('open');
 document.getElementById('binCtx').classList.remove('open');
 return;
 }
 e.preventDefault();
-var menu=document.getElementById('ctxMenu');
-menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
-menu.classList.add('open');
 document.getElementById('binCtx').classList.remove('open');
+placeMenu(document.getElementById('ctxMenu'),e.clientX,e.clientY);
 });
 document.addEventListener('click',function(e){
 if(!e.target.closest('#ctxMenu')){document.getElementById('ctxMenu').classList.remove('open')}
@@ -1053,9 +1045,7 @@ if(!e.target.closest('#binCtx')){document.getElementById('binCtx').classList.rem
 function showBinContextMenu(e){
 e.preventDefault();e.stopPropagation();
 document.getElementById('ctxMenu').classList.remove('open');
-var menu=document.getElementById('binCtx');
-menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
-menu.classList.add('open');
+placeMenu(document.getElementById('binCtx'),e.clientX,e.clientY);
 }
 
 function recycleAction(action){
@@ -1105,13 +1095,34 @@ if(mcb){
 mcb.innerHTML='<div class="mcontact-row">✉️ <a href="mailto:almujati02@gmail.com">almujati02@gmail.com</a></div><div class="mcontact-row">🐙 <a href="https://github.com/Al-Projects-stack" target="_blank">github.com/Al-Projects-stack</a></div><div class="mcontact-row">🔗 <a href="https://linkedin.com/in/al-mujati-494789224" target="_blank">linkedin.com/in/al-mujati-494789224</a></div>';}
 })();
 
-// ── Auto-open about window after login (fallback if already logged in) ──
-setTimeout(function(){if(document.body.classList.contains('logged-in'))openWindow('about')},6000);
-
 // ── Keyboard shortcuts ──
 document.addEventListener('keydown',function(e){
-if(e.key==='Escape'){closeStartMenu();document.getElementById('ctxMenu').classList.remove('open')}
+if(document.getElementById('bsod').classList.contains('open')){closeBsod();return}
+if(e.key==='Escape'){
+closeStartMenu();
+['ctxMenu','binCtx','volPopup','netPopup','calBalloon','trayMore','uac'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('open')});
+}
 });
+
+// ── BSOD easter egg (any key or click closes it) ──
+var bsodOpenedAt=0;
+function openBsod(){bsodOpenedAt=Date.now();document.getElementById('bsod').classList.add('open')}
+function closeBsod(){if(Date.now()-bsodOpenedAt<400)return;document.getElementById('bsod').classList.remove('open')}
+
+// ── Keep popup menus inside the viewport ──
+function placeMenu(menu,x,y){
+menu.style.left=x+'px';menu.style.top=y+'px';menu.classList.add('open');
+var r=menu.getBoundingClientRect(),pad=4,maxY=window.innerHeight-42-pad;
+if(r.right>window.innerWidth-pad)menu.style.left=Math.max(pad,x-r.width)+'px';
+if(r.bottom>maxY)menu.style.top=Math.max(pad,y-r.height)+'px';
+}
+
+// ── Sidebar toggle (tray → Gadgets) ──
+function toggleSidebar(){
+var hidden=document.body.classList.toggle('no-sidebar');
+document.getElementById('trayMore').classList.remove('open');
+showBalloon('⚙️','Gadgets',hidden?'Sidebar hidden. Use Gadgets again to bring it back.':'Sidebar is back.','ok');
+}
 
 // ── Search start menu ──
 function searchStartMenu(q){
@@ -1162,10 +1173,11 @@ window.location.href='../index.html';
 }
 
 // ── Vista sounds (Web Audio, no files) ──
-var audioCtx=null,startupPlayed=false;
+var audioCtx=null;
 function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+// first click/key only unlocks audio; the startup chime plays once, when the desktop appears after login
 function unlockAudio(){
-try{ensureAudio();if(!startupPlayed){startupPlayed=true;setTimeout(function(){playVistaSound('startup')},120)}}catch(e){}
+try{ensureAudio()}catch(e){}
 document.removeEventListener('click',unlockAudio);document.removeEventListener('keydown',unlockAudio);
 }
 document.addEventListener('click',unlockAudio);document.addEventListener('keydown',unlockAudio);
@@ -1183,8 +1195,6 @@ else if(kind==='balloon'){o.frequency.value=880;o.type='sine';g.gain.value=vol*0
 // ── Cursor glow ──
 (function(){var g=document.getElementById('cursorGlow');if(!g)return;document.addEventListener('mousemove',function(e){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';g.classList.add('on')});document.addEventListener('mouseleave',function(){g.classList.remove('on')})})();
 
-// ── Boot cross-fade + startup sound ──
-(function(){var b=document.getElementById('boot');if(!b)return;b.addEventListener('transitionend',function(){if(document.body.classList.contains('logged-in'))showBalloon('👋','Welcome','Vista portfolio loaded. Click anywhere to enable sounds, then try the Sidebar or Start Menu.','ok')})})();
 
 // ── Explorer Projects filter + view toggle ──
 var projView='list';
@@ -1220,6 +1230,7 @@ document.addEventListener('mouseout',function(e){if(e.target.closest('.tb-window
 // ── Tray chevron + balloons ──
 function toggleTrayMore(e){e.stopPropagation();document.getElementById('calBalloon').classList.remove('open');document.getElementById('volPopup').classList.remove('open');document.getElementById('netPopup').classList.remove('open');document.getElementById('trayMore').classList.toggle('open')}
 function showBalloon(ico,title,msg,kind){
+if(isMobileView())return;
 var box=document.getElementById('balloonBox');if(!box)return;
 var el=document.createElement('div');el.className='balloon';
 el.innerHTML='<div class="balloon-ico">'+ico+'</div><div><div class="balloon-title">'+title+'</div><div class="balloon-msg">'+msg+'</div></div><span class="toast-x" style="margin-left:auto" onclick="this.parentElement.remove()">✕</span>';
@@ -1227,19 +1238,37 @@ el.onclick=function(){el.classList.add('out');setTimeout(function(){el.remove()}
 box.appendChild(el);playVistaSound('balloon');
 setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove()},180)},4200);
 }
-// periodic hustle tip
-setTimeout(function(){showBalloon('💡','Tip','Right-click the desktop for Theme & Properties.','ok')},6000);
-setTimeout(function(){showBalloon('🗑️','Recycle Bin','Drag desktop icons to the Bin. Shake the Bin to empty.','warn')},11000);
 
-// ── Slideshow gadget ──
+// ── Project gallery gadget: one screenshot per project; click opens it in the Projects window ──
+var gallery=[
+{name:'CarIQ',img:'gallery/cariq.jpg'},
+{name:'Landing Pages Ideas',img:'gallery/landing-pages.jpg'},
+{name:'Sewandgrow Website',img:'gallery/sewandgrow.jpg'},
+{name:'CV Automation Pipeline',img:'gallery/cv-automation.jpg'},
+{name:'Finance Dashboard',img:'gallery/finance-dashboard.jpg'},
+{name:'GitHub Stats Dashboard',img:'gallery/github-dashboard.jpg'},
+{name:'Chat System',img:'gallery/chat-system.jpg'},
+{name:'Weather App',img:'gallery/weather-app.jpg'}
+];
 (function(){
-var imgs=document.querySelectorAll('#slideFrame img'),dots=document.querySelectorAll('#slideDots .slide-dot');
-if(!imgs.length)return;var idx=0;
-setInterval(function(){
+var frame=document.getElementById('slideFrame'),cap=document.getElementById('slideCap'),dotBox=document.getElementById('slideDots');
+if(!frame)return;
+var imgs=[],dots=[],idx=0,timer=null;
+gallery.forEach(function(g,i){
+var im=document.createElement('img');im.src=g.img;im.alt=g.name+' screenshot';if(i>0)im.loading='lazy';frame.appendChild(im);imgs.push(im);
+var d=document.createElement('button');d.className='slide-dot';d.title=g.name;d.setAttribute('aria-label','Show '+g.name);
+d.onclick=function(){show(i);restart()};dotBox.appendChild(d);dots.push(d);
+});
+function show(i){
 imgs[idx].classList.remove('on');dots[idx].classList.remove('on');
-idx=(idx+1)%imgs.length;
-imgs[idx].classList.add('on');dots[idx].classList.add('on');
-},3200);
+idx=i;imgs[idx].classList.add('on');dots[idx].classList.add('on');cap.textContent=gallery[idx].name;
+}
+function restart(){clearInterval(timer);timer=setInterval(function(){show((idx+1)%imgs.length)},3600)}
+frame.onclick=function(){
+openWindow('projects');
+var s=document.getElementById('projSearch');s.value=gallery[idx].name;filterProjects(s.value);
+};
+show(0);restart();
 })();
 
 // ── Terminal commands ──
@@ -1250,7 +1279,7 @@ var d=document.createElement('div');d.className='term-line '+(cls||'');d.innerHT
 }
 function runTerm(cmd){
 cmd=(cmd||'').trim();if(!cmd)return;
-printTerm('C:\\Users\\Al&gt; '+cmd,'cmd');
+printTerm('C:\\Users\\Al&gt; '+escHtml(cmd),'cmd');
 var q=cmd.toLowerCase();
 if(q==='help')printTerm('Commands: help, clear, about, projects, skills, contact, github, date, whoami, konami','ok');
 else if(q==='clear')document.getElementById('termOut').innerHTML='';
@@ -1261,9 +1290,10 @@ else if(q==='contact')printTerm('almujati02@gmail.com · github.com/Al-Projects-
 else if(q==='github')window.open('https://github.com/Al-Projects-stack','_blank');
 else if(q==='date')printTerm(new Date().toString(),'');
 else if(q==='whoami')printTerm('Al Mujati','ok');
-else if(q==='konami'||q==='bsod'){document.getElementById('bsod').classList.add('open')}
-else printTerm('Unknown command: '+cmd+' (try help)','err');
+else if(q==='konami'||q==='bsod'){openBsod()}
+else printTerm('Unknown command: '+escHtml(cmd)+' (try help)','err');
 }
+function escHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 setTimeout(function(){printTerm('Microsoft Windows [Version 6.0.6000]','');printTerm('(c) Vista Portfolio. Type help.','warn')},500);
 
 // ── UAC hook for Change Theme ──
@@ -1290,7 +1320,7 @@ bin.addEventListener('dragleave',function(){bin.classList.remove('drop-target')}
 bin.addEventListener('drop',function(e){
 e.preventDefault();bin.classList.remove('drop-target');
 var id=e.dataTransfer.getData('text/plain');
-if(id){showBalloon('🗑️','Recycle Bin','“'+id+'” moved to bin. (Right-click Bin → Restore)','warn');playVistaSound('close')}
+if(id){showBalloon('🗑️','Recycle Bin','“'+id+'” moved to bin. Just kidding, it is still on your desktop.','warn');playVistaSound('close')}
 });
 var clicks=0,last=0;
 bin.addEventListener('click',function(){
@@ -1300,7 +1330,7 @@ if(clicks>=3){bin.animate([{transform:'translateX(0)'},{transform:'translateX(-4
 }
 var konami=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
 var pos=0;document.addEventListener('keydown',function(e){
-if(e.key===konami[pos]){pos++;if(pos===konami.length){pos=0;document.getElementById('bsod').classList.add('open')}}else pos=0;
+if(e.key===konami[pos]){pos++;if(pos===konami.length){pos=0;openBsod()}}else pos=(e.key===konami[0])?1:0;
 });
 })();
 
@@ -1310,18 +1340,22 @@ if(!e.target.closest('#calBalloon')&&!e.target.closest('#clock')){var cb=documen
 if(!e.target.closest('#trayMore')&&!e.target.closest('#trayChevron')){var tm=document.getElementById('trayMore');if(tm)tm.classList.remove('open')}
 });
 
-// ── Switch Theme auto-hide ──
-var stb=document.getElementById('switchThemeBtn');
-if(stb){
-setTimeout(function(){stb.style.opacity='0';stb.style.transform='translateY(-16px)';stb.style.pointerEvents='none'},4000);
-window.addEventListener('scroll',function(){
-if(window.scrollY<10){
-stb.style.opacity='1';stb.style.transform='translateY(0)';stb.style.pointerEvents='auto';
-}else{
+// ── Switch Theme button: shown after login, hides after a few seconds, returns when the mouse nears it ──
+var stb=document.getElementById('switchThemeBtn'),stbTimer=null;
+function hideSwitchBtn(){
+if(!stb)return;
+if(stb.matches(':hover')){stbTimer=setTimeout(hideSwitchBtn,1000);return}
 stb.style.opacity='0';stb.style.transform='translateY(-16px)';stb.style.pointerEvents='none';
 }
-});
+function showSwitchBtn(ms){
+if(!stb)return;
+stb.style.opacity='1';stb.style.transform='translateY(0)';stb.style.pointerEvents='auto';
+clearTimeout(stbTimer);stbTimer=setTimeout(hideSwitchBtn,ms||2500);
 }
+document.addEventListener('mousemove',function(e){
+if(!document.body.classList.contains('logged-in'))return;
+if(e.clientY<70&&e.clientX>80&&e.clientX<360)showSwitchBtn(2500);
+});
 </script>
 </body>
 </html>
