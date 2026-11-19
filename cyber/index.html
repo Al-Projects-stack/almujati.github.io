@@ -1371,6 +1371,17 @@
       background: linear-gradient(transparent, var(--card2));
     }
 
+    /* Pixel Al roaming the free space (assets/al-roam.js) */
+    al-mascot.al-roamer { width: clamp(64px, 6vw, 84px); }
+    /* on phones there is no free space beside the content, so he gets his own strip under the hero */
+    .al-strip { display: none; }
+    @media (max-width: 820px) {
+      .al-strip {
+        display: block; position: relative; height: 118px; margin: 4px 0 28px;
+        border-bottom: 1px solid rgba(0,212,255,0.22);
+        background: linear-gradient(to top, rgba(0,212,255,0.07), transparent 55%);
+      }
+    }
   </style>
 </head>
 <body>
@@ -1483,7 +1494,7 @@
 
       <aside class="profile-box reveal" style="transition-delay:0.25s">
         <div class="avatar-wrap">
-          <img class="avatar" src="upscaled_image.jpg" alt="Al Takura Mujati">
+          <img class="avatar" src="../vista/profile.jpg" alt="Al Takura Mujati">
         </div>
         <div class="status-badge">
           <span class="status-dot"></span>
@@ -1496,6 +1507,9 @@
         </div>
       </aside>
     </section>
+
+    <!-- Pixel Al's stage on phones (empty; see the Al script at the end) -->
+    <div class="al-strip" aria-hidden="true"></div>
 
     <div class="glow-divider"></div>
 
@@ -2399,6 +2413,64 @@
         }
       });
     }
+  </script>
+  <!-- Pixel Al: lives in the free space beside the content, never over it -->
+  <script src="../assets/al-mascot.js"></script>
+  <script src="../assets/al-roam.js"></script>
+  <script>
+    (function () {
+      if (!window.AlRoam || !window.customElements) return;
+      var al = document.createElement('al-mascot');
+      al.className = 'al-roamer';
+      var phone = window.matchMedia('(max-width: 820px)').matches, strip = document.querySelector('.al-strip');
+      // click him: a project joke (plus the shared ones in al-roam.js)
+      var quips = [
+        'Careful with that spinning square behind the photo. Speaking from experience.',
+        'I flash-stepped across this whole page and still beat the loader.',
+        'Scroll really fast and watch me fall. Actually, please don\'t.'
+      ];
+      function go() {
+        if (phone && strip) {
+          // phones: he lives in his strip, feet on its floor line, and scrolls with the page
+          AlRoam.start(al, {
+            stage: strip, teleport: 'glitch', bounds: strip, floor: true, delay: followed ? 150 : 400,
+            acts: ['wander', 'pushups', 'pc', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'powerup'],
+            bubble: 'cyber', quips: quips,
+            tip: 'Psst... they squeezed me into this tiny strip. Open this on a laptop for the full show!'
+          });
+          return;
+        }
+        AlRoam.start(al, {
+          stage: 'fixed', z: 1, teleport: 'glitch', watch: true,
+          // scrolling shakes his world: he falls while the page moves and hits the floor when it stops
+          fall: true, bubble: 'cyber', quips: quips,
+          // scan .container for real content so he can use the open space inside sections;
+          // the hero heading (typewriter word grows) and the photo box count as whole blocks
+          content: '.container',
+          avoid: '.hero h1, .profile-box, #nav-sticky, #switchThemeBtn, .floating-tag, #scroll-top, .kb-hint, #toast, #proj-modal',
+          bump: '.panel, .proj-slideshow, .profile-box, .avail-panel, .proj-card',
+          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'powerup'],
+          // once per visit, after two activities and 6s on the page: runs on the spinning square behind the photo
+          spinner: '.avatar-wrap', special: { act: 'square', after: 2, at: 6000 }
+        });
+      }
+      // after the loader has gone (or 6s, if slow images hold up the load event)
+      // coming from the world picker he followed you here: glitches in as soon as the page is up
+      var followed = false;
+      try { followed = sessionStorage.getItem('alFollow') === 'cyber'; sessionStorage.removeItem('alFollow'); } catch (e) {}
+      var loader = document.getElementById('page-loader'), t0 = Date.now();
+      (function wait() {
+        if (!loader || loader.classList.contains('done') || Date.now() - t0 > 6000) {
+          if (phone && strip && window.IntersectionObserver) {
+            // make his entrance when his strip first comes into view
+            var io = new IntersectionObserver(function (es) {
+              if (es[0].isIntersecting) { io.disconnect(); go(); }
+            }, { threshold: 0.6 });
+            io.observe(strip);
+          } else setTimeout(go, followed ? 450 : 1400);
+        } else setTimeout(wait, 200);
+      })();
+    })();
   </script>
 </body>
 </html>

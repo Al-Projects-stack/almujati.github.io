@@ -155,16 +155,12 @@ transition:border-color 0.2s,color 0.2s;
 .card.shown{opacity:1;pointer-events:auto}
 /* roaming Al: a card glows when he shows it off, and wobbles when he walks into it */
 .card.al-glow{animation:alGlow 1.2s ease}
-.card.al-bump-r{animation:alBumpR .4s ease}
-.card.al-bump-l{animation:alBumpL .4s ease}
 @keyframes alGlow{40%{box-shadow:0 0 70px rgba(110,200,255,.45),0 0 0 1px rgba(150,220,255,.5)}}
-@keyframes alBumpR{25%{transform:translateX(4px)}60%{transform:translateX(-2px)}}
-@keyframes alBumpL{25%{transform:translateX(-4px)}60%{transform:translateX(2px)}}
 @media(max-width:660px){
 body{overflow-y:auto;align-items:flex-start}
 .cards{grid-template-columns:1fr;gap:16px}
 .card{min-height:200px;padding:28px 24px}
-.al-slot{order:-1;width:84px;align-self:center}
+.al-slot{order:-1;width:84px;align-self:center;margin-top:34px}
 }
 </style>
 </head>
@@ -233,12 +229,33 @@ var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)
 // then walks to his spot between the cards and presents Cyber, then Vista
 var al=document.getElementById('introAl'),slot=document.getElementById('alSlot'),arrived=false;
 var cyberCard=document.querySelector('.card-cyber'),vistaCard=document.querySelector('.card-vista');
-var presenting=false,timers=[],waveAt=0,roaming=false;
+var presenting=false,timers=[],waveAt=0,roaming=false,roamer=null;
+// picking a world: Al goes with you. Cyber: he glitches out (and glitches back in once Cyber has loaded);
+// Vista: a glass window wraps round him and minimizes (he restores on the Vista desktop)
+[cyberCard,vistaCard].forEach(function(c){
+if(!c)return;
+c.addEventListener('click',function(e){
+if(reduce||!al||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+e.preventDefault();
+var href=c.href,p=c===cyberCard?'glitch-out':'minimize';
+try{sessionStorage.setItem('alFollow',c===cyberCard?'cyber':'vista')}catch(err){}
+var gone=false,go=function(){if(!gone){gone=true;location.href=href}};
+if(roamer)roamer.leave(p).then(go);
+else{timers.forEach(clearTimeout);al.setAttribute('pose',p);var M=customElements.get('al-mascot');setTimeout(go,M&&M.dur?M.dur(p):600)}
+setTimeout(go,2000);   // never hold the visitor up
+});
+});
 // once the worlds are on the table, Al roams the free space and does his own thing (assets/al-roam.js)
 function roam(){
 if(roaming||reduce||!al||!slot||!window.AlRoam)return;
 roaming=true;
-AlRoam.start(al,{home:slot,avoid:'h1,.sub,.card,.switch-link,.footer',text:'h1,.sub,.switch-link,.footer',bump:[cyberCard,vistaCard],worlds:[cyberCard,vistaCard]});
+// phones: no room beside the cards, so he keeps to his own strip above them (full width, his slot at the bottom)
+var phone=window.matchMedia('(max-width:660px)'),cards=document.querySelector('.cards');
+roamer=AlRoam.start(al,{home:slot,avoid:'h1,.sub,.card,.switch-link,.footer',text:'h1,.sub,.switch-link,.footer',bump:[cyberCard,vistaCard],worlds:[cyberCard,vistaCard],
+floor:true,bounds:function(){if(!phone.matches)return null;var c=cards.getBoundingClientRect(),s=slot.getBoundingClientRect();return{left:c.left,right:c.right,top:s.top-34,bottom:s.bottom}},
+acts:phone.matches?['wander','pushups','pc','juggle']:null,
+quips:['Cyber or Vista? Same projects, different vibes. Pick one!','Two worlds, one dev. I\'m the tour guide.'],
+tip:phone.matches?'Psst... this whole thing is way better on a laptop. Just saying.':null});
 }
 function pose(p){if(al)al.setAttribute('pose',p)}
 function later(fn,ms){timers.push(setTimeout(fn,ms))}

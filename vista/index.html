@@ -473,6 +473,11 @@ opacity:0;transition:opacity 0.6s ease;
 .term-input{flex:1;background:transparent;border:none;outline:none;color:#e0ecff;font-family:'Consolas',monospace;font-size:11px}
 
 .sm-item.sm-hidden{display:none}
+/* Pixel Al roaming the free desktop (assets/al-roam.js) */
+al-mascot.al-roamer{width:clamp(64px,5.5vw,80px)}
+/* phones: his own strip under About in the mobile layout */
+.al-strip{display:none}
+@media(max-width:820px){.al-strip{display:block;position:relative;height:118px;margin:0 16px;border-bottom:1px solid rgba(74,144,217,0.3);background:linear-gradient(to top,rgba(74,144,217,0.1),transparent 55%)}}
 </style>
 </head>
 <body>
@@ -499,6 +504,7 @@ opacity:0;transition:opacity 0.6s ease;
 <p style="margin-top:8px"><strong>🎓</strong> BSc Computer Science (completed) · BSc Honours Security &amp; Network Engineering (in progress), Eduvos</p>
 <p style="margin-top:8px"><strong>⚡ Currently building:</strong> tinyllm, a decoder-only transformer LLM from scratch in PyTorch</p>
 </div>
+<div class="al-strip" aria-hidden="true"></div>
 <div class="msection" id="mProjects">
 <h2>Projects</h2>
 <div id="mProjectsBody"></div>
@@ -1356,6 +1362,52 @@ document.addEventListener('mousemove',function(e){
 if(!document.body.classList.contains('logged-in'))return;
 if(e.clientY<70&&e.clientX>80&&e.clientX<360)showSwitchBtn(2500);
 });
+</script>
+<!-- Pixel Al: lives on the desktop above the wallpaper, under icons and windows -->
+<script src="../assets/al-mascot.js"></script>
+<script src="../assets/al-roam.js"></script>
+<script>
+(function(){
+if(!window.AlRoam||!window.customElements)return;
+var al=document.createElement('al-mascot');al.className='al-roamer';
+var strip=document.querySelector('.al-strip');
+// click him: a project joke (plus the shared ones in al-roam.js)
+var quips=['Cancel or Allow? I always pick Allow. Then Allow. Then Allow.','Windows Update says 2 minutes left. It said that an hour ago.','Try dragging a window over me. I dare you.'];
+if(isMobileView()){
+// phones: the mobile layout is a scrolling page, so he lives in his strip under About
+if(!strip||!window.IntersectionObserver)return;
+var boot=document.getElementById('boot');
+var io=new IntersectionObserver(function(es){
+if(!es[0].isIntersecting)return;
+io.disconnect();
+// not behind the boot screen: his entrance waits until it has gone
+(function wait(){if(boot&&!boot.classList.contains('done')){setTimeout(wait,300);return}
+AlRoam.start(al,{stage:strip,teleport:'minimize',bounds:strip,floor:true,delay:300,
+acts:['wander','pushups','juggle','uac','update','bsod','solitaire'],bubble:'vista',quips:quips,
+tip:'This is the pocket version. On a laptop it\'s a whole Vista desktop, trust me!'});
+})();
+},{threshold:0.6});
+io.observe(strip);
+return;
+}
+var started=false,followed=false;
+// coming from the world picker he followed you here: restores onto the desktop soon after you log in
+try{followed=sessionStorage.getItem('alFollow')==='vista';sessionStorage.removeItem('alFollow')}catch(e){}
+function go(){
+if(started||!document.body.classList.contains('logged-in'))return;
+started=true;
+AlRoam.start(al,{
+stage:document.getElementById('desktop'),z:2,teleport:'minimize',watch:true,delay:followed?900:2500,
+avoid:'.desk-icon,.window.active:not(.minimized),#sidebar,#taskbar,#startMenu.open,#switchThemeBtn,#ctxMenu,#binCtx,.tray-popup.open,#calBalloon,#balloonBox>*',
+text:'.desk-icon,#taskbar',
+bump:'.window.active:not(.minimized)',
+acts:['wander','pushups','bonk','juggle','uac','update','bsod','solitaire'],
+bubble:'vista',quips:quips
+});
+}
+new MutationObserver(go).observe(document.body,{attributes:true,attributeFilter:['class']});
+go();
+})();
 </script>
 </body>
 </html>
