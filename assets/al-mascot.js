@@ -16,6 +16,8 @@
                     bug-in* | stomp* | board-on* | hover | board-off* |
                     fall-in* | fall | fall-fast | fall-warp* | land* | crash* |
                     power-up* | powered | power-down*
+            any:    point (side) | peek (side) | found* | cv-out* | cv-read* | cv-stamp* | cv-show* | duck* | shy*
+    .look(dir)  'l' | 'r' | 'u' | null: his eyes (and head, a pixel) turn that way in front-facing poses
             Vista:  minimize* | restore* | uac* | uac-click* | facepalm* | sit-down* | update-wait |
                     doze | update-done* | stand-up* | bsod* | solitaire*
             (* plays once and holds the last frame; side poses face right)
@@ -68,6 +70,8 @@
   var HAPPY = { 8: '.BMTTTTMB.', 9: '..BmMMmB..' };       // open smile
   var SHOCK = { 8: '.BBMmmMBB.', 9: '..BBMMBB..' };       // "oh no" mouth
   var GLINT = { 4: 'EwwGFFwwGE' };
+  var LOOKS = { l: { 4: 'EwGGFFwGGE' }, r: { 4: 'EGGwFFGGwE' }, u: { 4: 'EGwGFFGwGE', 5: 'ESggSSggSE' } };
+  var LOOK = null;   // set by the element while it renders (where the cursor is)
   var NOGLASS = { 3: '.HSSSSSSH.', 4: 'ESmSSSSmSE', 5: 'ESsSSSSsSE' };
   var GLASSES_FRONT = ['FFF..FFF', 'GwGFFGwG', '.gg..gg.'];
 
@@ -187,6 +191,8 @@
       glitch: i % 3 === 2 ? gl(1 + Math.floor(i / 3), 3, 2, 1, 100 + i) : null
     });
   }
+  // holding the CV in front of him with both hands
+  var READ = { l: [25, -55, 6], r: [25, -55, 6] }, DOC = { y: 27, h: 18 };
   // superhero landing: back knee and one hand on the floor, far arm swept back
   var HERO = { legs: [[60, -60, -40], [-5, -90, 180]], lean: 62, hands: [[34, 69], null], arms: [0, [-80, -60]] };
   function hero(extra) { return sd(ext(HERO, extra)); }
@@ -571,6 +577,78 @@
       { dur: 340, happy: true, glint: true }
     ],
 
+    // ════ any world ════
+    // pointing at something (a project card): near arm straight out
+    point: [
+      sd({ dur: 600, legs: STAND, arms: [[86, 94], -5] }),
+      sd({ dur: 160, legs: STAND, arms: [[86, 94], -5], glint: true }),
+      sd({ dur: 500, legs: STAND, arms: [[90, 100], -5] })
+    ],
+    // hide and seek: hiding behind a card, leaning out to peek, ducking back now and then
+    peek: [
+      sd({ dur: 1300, legs: STAND, lean: 14, arms: [[20, 40], -5] }),
+      sd({ dur: 160, legs: STAND, lean: 15, arms: [[20, 40], -5], glint: true }),
+      sd({ dur: 900, legs: STAND, lean: 14, arms: [[20, 40], -5] }),
+      sd({ dur: 140, legs: STAND, lean: 6, arms: [[10, 20], -5] }),
+      sd({ dur: 700, legs: STAND, lean: -2, arms: [5, -5] }),
+      sd({ dur: 140, legs: STAND, lean: 8, arms: [[10, 20], -5] })
+    ],
+    // found: jumps, then arms up
+    found: [
+      { dur: 140, shock: true, hop: 3, l: [100, 140, 8], r: [100, 140, 8] },
+      { dur: 220, happy: true, hop: 1, l: UP.l, r: UP.r },
+      { dur: 220, happy: true, l: UP.l, r: UP.r },
+      { dur: 220, happy: true, hop: 1, l: UP.l, r: UP.r },
+      { dur: 300, happy: true }
+    ],
+    // the CV: rubs his hands, conjures it, unrolls it, reads it (more and more impressed), raises a rubber
+    // stamp, slams HIRED on it, holds it up over his head, poofs it away
+    'cv-out': [
+      { dur: 200, l: RUB.l, r: RUB.r },
+      { dur: 160, l: RUB2.l, r: RUB2.r, sparks: [[19, 36, 1]] },
+      { dur: 140, l: READ.l, r: READ.r, doc: { y: 27, h: 4 }, sparks: [[10, 30, 2], [29, 31, 1]] },
+      { dur: 120, l: READ.l, r: READ.r, doc: { y: 27, h: 10 } },
+      { dur: 160, l: READ.l, r: READ.r, doc: { y: 27, h: 18 } }
+    ],
+    'cv-read': [
+      { dur: 420, l: READ.l, r: READ.r, doc: DOC, look: 'l' },
+      { dur: 420, l: READ.l, r: READ.r, doc: DOC, look: 'r' },
+      { dur: 380, l: READ.l, r: READ.r, doc: DOC, look: 'l', glint: true },
+      { dur: 480, l: READ.l, r: READ.r, doc: DOC, shock: true },
+      { dur: 420, l: READ.l, r: READ.r, doc: DOC, look: 'r' },
+      { dur: 520, l: READ.l, r: READ.r, doc: DOC, happy: true, hop: 1 }
+    ],
+    'cv-stamp': [
+      { dur: 260, l: READ.l, r: [150, 165, 8], doc: DOC, stampAt: [33, 7], sparks: [[34, 5, 1]] },
+      { dur: 300, l: READ.l, r: [150, 165, 8], doc: DOC, stampAt: [33, 7], glint: true },
+      { dur: 70, l: READ.l, r: [30, -80, 8], doc: DOC, stampAt: [22, 30], dy: 1 },
+      { dur: 110, l: READ.l, r: [30, -80, 8], doc: ext(DOC, { stamp: 1 }), stampAt: [22, 29], dy: 1, shock: true },
+      { dur: 380, l: READ.l, r: [24, -50, 7], doc: ext(DOC, { stamp: 2 }), happy: true }
+    ],
+    'cv-show': [
+      { dur: 700, l: UP.l, r: UP.r, doc: { y: 0, h: 15, stamp: 2 }, happy: true },
+      { dur: 220, l: UP.l, r: UP.r, doc: { y: 0, h: 15, stamp: 2 }, happy: true, hop: 2 },
+      { dur: 600, l: UP.l, r: UP.r, doc: { y: 0, h: 15, stamp: 2 }, happy: true },
+      { dur: 180, l: UP.l, r: UP.r, poof: [20, 8] },
+      { dur: 300, happy: true }
+    ],
+    // the cursor whooshed past: ducks, arms over his head, then peeks up
+    duck: [
+      { dur: 60, shock: true, crouch: 4, l: [150, 240, 7], r: [150, 240, 7] },
+      { dur: 420, shock: true, crouch: 9, l: [160, 262, 7], r: [160, 262, 7] },
+      { dur: 220, crouch: 6, l: [150, 250, 7], r: [150, 250, 7], look: 'u' },
+      { dur: 200, crouch: 2 },
+      { dur: 240 }
+    ],
+    // the cursor sits on him: shy, rubs the back of his head
+    shy: [
+      { dur: 220, happy: true, r: [130, 225, 7], look: 'l' },
+      { dur: 200, happy: true, r: [130, 240, 7], look: 'l' },
+      { dur: 200, happy: true, r: [130, 225, 7], look: 'l' },
+      { dur: 200, happy: true, r: [130, 240, 7], look: 'l' },
+      { dur: 260, happy: true }
+    ],
+
     // ════ Vista world ════
     // minimize: an Aero window frame wraps round him and genies down to nothing; restore is the reverse
     minimize: [mini(1, 180), mini(0.8, 70), mini(0.58, 70), mini(0.36, 70), mini(0.16, 70), { dur: 80, hidden: true }],
@@ -660,7 +738,8 @@
     'board-on': 1, 'board-off': 1, minimize: 1, restore: 1, uac: 1, 'uac-click': 1, facepalm: 1,
     'sit-down': 1, 'update-done': 1, 'stand-up': 1, bsod: 1, solitaire: 1,
     'dash-ready': 1, 'flash-out': 1, 'flash-in': 1, 'dash-stop': 1, split: 1, lag: 1,
-    'fall-in': 1, 'fall-warp': 1, land: 1, crash: 1, 'power-up': 1, 'power-down': 1
+    'fall-in': 1, 'fall-warp': 1, land: 1, crash: 1, 'power-up': 1, 'power-down': 1,
+    found: 1, 'cv-out': 1, 'cv-read': 1, 'cv-stamp': 1, 'cv-show': 1, duck: 1, shy: 1
   };
 
   function Painter(ctx) { this.c = ctx; this.ox = XO; this.oy = 0; }
@@ -1023,6 +1102,32 @@
       }
     });
   }
+  // the CV: cream paper with a blue header and grey text lines; stamp 1 = just slammed (ink spatter), 2 = HIRED
+  var FONT = {
+    H: ['#.#', '#.#', '###', '#.#', '#.#'], I: ['###', '.#.', '.#.', '.#.', '###'], R: ['##.', '#.#', '##.', '#.#', '#.#'],
+    E: ['###', '#..', '##.', '#..', '###'], D: ['##.', '#.#', '#.#', '#.#', '##.']
+  };
+  function drawDoc(p, d) {
+    var x0 = 8, x1 = 32, y0 = d.y, y1 = d.y + d.h;
+    p.rect(x0, y0, x1, y1, '#f4efe2'); p.rect(x0, y1, x1, y1, '#d8d0bc'); p.rect(x1, y0, x1, y1, '#d8d0bc');
+    if (d.h >= 6) p.rect(x0 + 2, y0 + 2, x0 + 9, y0 + 2, '#4a90d9');
+    for (var y = y0 + 5, k = 0; y < y1 - 1; y += 2, k++) p.rect(x0 + 2, y, x1 - 3 - (k * 7) % 9, y, '#a9b0bf');
+    if (d.stamp) {
+      var by = Math.max(y0 + 2, y1 - 11), red = d.stamp === 1 ? '#ff3b3b' : '#d22c2c';
+      p.rect(x0 + 1, by, x1 - 1, by + 8, 'rgba(244,239,226,0.85)');
+      p.rect(x0 + 1, by, x1 - 1, by, red); p.rect(x0 + 1, by + 8, x1 - 1, by + 8, red);
+      p.rect(x0 + 1, by, x0 + 1, by + 8, red); p.rect(x1 - 1, by, x1 - 1, by + 8, red);
+      'HIRED'.split('').forEach(function (ch, i) { p.map(FONT[ch], x0 + 3 + i * 4, by + 2, { '#': red }); });
+      if (d.stamp === 1) [[x0 - 1, by - 2], [x1 + 1, by + 1], [x0 + 4, by + 10], [x1 - 3, by - 2], [x1 + 2, by + 7]].forEach(function (q) { p.px(q[0], q[1], red); });
+    }
+    if (d.y > 20) { p.rect(x0 - 1, y0 + 6, x0, y0 + 7, C.S); p.rect(x1, y0 + 6, x1 + 1, y0 + 7, C.S); }   // his fingers on the edges
+  }
+  // rubber stamp (held by its handle): knob, handle, red base
+  function drawStamp(p, x, y) {
+    p.rect(x - 1, y, x + 1, y + 1, '#8a5a2b'); p.rect(x, y + 2, x, y + 4, '#8a5a2b');
+    p.rect(x - 3, y + 5, x + 3, y + 6, '#6b4220'); p.rect(x - 3, y + 7, x + 3, y + 7, '#d22c2c');
+    p.rect(x - 1, y + 2, x + 1, y + 3, C.S);   // his hand round it
+  }
   // air rushing up past him while he falls (lines over his body only above the head)
   function drawWind(p, w) {
     var cols = ['rgba(127,233,255,0.75)', 'rgba(255,40,170,0.55)', 'rgba(0,212,255,0.5)'];
@@ -1045,6 +1150,8 @@
   function propsFront(ctx, f) {
     var p = new Painter(ctx);
     if (f.impact) drawImpact(p, f.impact, 19.5 + (f.dx || 0));
+    if (f.doc) drawDoc(p, f.doc);
+    if (f.stampAt) drawStamp(p, f.stampAt[0], f.stampAt[1]);
     if (f.motes != null) drawMotes(p, f.motes);
     if (f.bolt != null) drawBolt(p, f.bolt);
     if (f.spin != null) drawSpin(p, f.spin);
@@ -1289,9 +1396,14 @@
     var head = HEAD.slice(), r;
     if (f.happy) for (r in HAPPY) head[r] = HAPPY[r];
     if (f.shock) for (r in SHOCK) head[r] = SHOCK[r];
+    var look = f.look || LOOK, lx = 0, ly = 0;
     if (f.noglass) for (r in NOGLASS) head[r] = NOGLASS[r];
     else if (f.glint) for (r in GLINT) head[r] = GLINT[r];
-    p.map(head, 15, 16, C);
+    else if (look && LOOKS[look]) {
+      for (r in LOOKS[look]) head[r] = LOOKS[look][r];
+      lx = look === 'l' ? -1 : look === 'r' ? 1 : 0; ly = look === 'u' ? -1 : 0;   // the head turns a pixel too
+    }
+    p.map(head, 15 + lx, 16 + ly, C);
     if (f.spiky) drawSpikes(p, f.spiky);
 
     // arms (drawn last so raised arms sit in front)
@@ -1353,10 +1465,22 @@
     var name = this.getAttribute('pose'), frames = POSES[name] || POSES.idle, self = this, i = 0;
     var worlds = this.hasAttribute('worlds'), once = ONCE[name];
     (function tick() {
+      self._f = frames[i]; LOOK = self._look || null;
       render(self._ctx, frames[i], worlds);
+      LOOK = null;
       if (reduceMotion || frames.length < 2 || (once && i === frames.length - 1)) return;
       self._t = setTimeout(function () { i = (i + 1) % frames.length; tick(); }, frames[i].dur);
     })();
+  };
+
+  // turn his eyes toward something without restarting the pose
+  AlMascot.prototype.look = function (d) {
+    d = d || null;
+    if (this._look === d) return;
+    this._look = d;
+    if (this._ctx && this._f && !this._f.side) {
+      LOOK = d; render(this._ctx, this._f, this.hasAttribute('worlds')); LOOK = null;
+    }
   };
 
   customElements.define('al-mascot', AlMascot);

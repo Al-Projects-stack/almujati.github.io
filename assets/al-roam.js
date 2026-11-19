@@ -36,10 +36,15 @@
       tip:      a line he says soon after he appears and every few clicks (the "use a laptop" nudge),
       clickPower: true: three quick clicks on him set off his glitched power-up (spiky glowing hair,
                 flickering aura); the second click warns you,
-      quake:    selector of what shakes during the power-up (the page's content and backdrop layers)
+      quake:    selector of what shakes during the power-up (the page's content and backdrop layers),
+      guide:    { cards, name }: hover a project card and he comes over, points at it and says something
+                about that project (name = selector of the card's title),
+      hide:     selector of solid cards he can hide behind for hide and seek (the 'hide' activity),
+      cv:       selector of the CV links: opening the CV makes him read it and stamp it HIRED
     });
 
   Click him and he says something about one of the projects (in a speech bubble over his head).
+  With a mouse his eyes follow the cursor; whoosh it past him and he ducks; rest it on him and he gets shy.
 
   Shared:  wander, pushups, pc, bonk, juggle
   Cyber:   hack (hologram), bug (stomps a bug), hover (hoverboard ride), glitch (teleports),
@@ -94,6 +99,25 @@
     "Sewandgrow is a real live site. I'm a real live sprite. Basically colleagues.",
     "The projects are clickable too. Honestly, they're more useful than me."
   ];
+  // tour guide: what he says about each project (matched on the card's title)
+  var PROJECT_LINES = [
+    ['cariq', ['This is CarIQ. Ask it anything about used cars. Except my hoverboard.', 'CarIQ tells you if that "barely driven" car is lying.']],
+    ['landing', ['Five landing pages, five personalities. Sounds like my group chat.', 'Each one has its own motion design. I have one move: walking.']],
+    ['sewandgrow', ['A real client, a real live site. Go on, have a look.', 'Built it, shipped it, and it\'s still out there working.']],
+    ['fleet', ['AI Fleet Manager knows a truck needs a service before the truck does.', 'Telematics plus AI. Basically a fortune teller for trucks.']],
+    ['cv automation', ['It writes tailored CVs. A CV generator on a CV site. Very meta.', 'Paste a job description, get a CV and cover letter. Wish it did my push-ups.']],
+    ['finance', ['Charts, budgets, forecasts. It knows where the money went. I don\'t want to know.', 'Node and PostgreSQL under a slick dark theme. Like me, but with charts.']],
+    ['github', ['Type any GitHub username and it builds a whole profile. Try yours!', 'GitHub data in, dashboard out. My stats: one sprite, zero bugs. OK, some bugs.']],
+    ['url', ['Long links in, short links out. With click analytics, so it knows who clicked.', 'It makes links short. I\'m short too. Relatable.']],
+    ['password', ['Web Crypto under the hood, so the passwords are properly random. Unlike my dance moves.', 'It scores how strong your password is. Mine scored "please try again".']],
+    ['chat', ['Real-time chat inside a live production site. WebSockets doing their thing.', 'Customers chat to the business live. Faster than my replies.']],
+    ['weather', ['Real forecasts by location. In here: sunny, with a chance of pixels.', 'It does multi-day outlooks. I can\'t plan past lunch.']]
+  ];
+  function projectLine(name) {
+    name = (name || '').toLowerCase();
+    for (var i = 0; i < PROJECT_LINES.length; i++) if (name.indexOf(PROJECT_LINES[i][0]) >= 0) return pick(PROJECT_LINES[i][1]);
+    return 'Ooh, good pick. Click it for the details!';
+  }
   var FALL_QUIPS = ['AAAAAAAH!', 'Wheeeee!', 'Who turned off gravity?!', 'Scroll slower, I beg you!'];
   var CSS = '.al-say{position:fixed;left:0;top:0;z-index:2147483000;pointer-events:none;box-sizing:border-box;max-width:min(240px,calc(100vw - 16px));' +
     'padding:8px 11px;font:500 12.5px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:#f2ecff;background:#1c1530;border:1px solid #8f6cff;' +
@@ -260,8 +284,27 @@
         });
         return out.length ? pick(out) : null;
       }
+      // behind a card, near one of its side edges, so only the front of his head peeks out past the edge
+      // (the stage is under the content, so the card hides the rest of him)
+      var seeking = null, foundIt = false;
+      function hideSpot() {
+        var v = view(), s = scale(), w = al.offsetWidth, h = al.offsetHeight, out = [];
+        [].slice.call(document.querySelectorAll(o.hide)).filter(shown).forEach(function (card) {
+          var c = rel(card.getBoundingClientRect()), y = c.b - h - 3 * s;
+          if (c.t > y + 14 * s || y + 14 * s < v.t || c.b > v.b) return;   // the card covers him from the head down, on screen
+          // what else is around (not the card, nor boxes it sits inside)
+          var others = avoidRects(4, card).filter(function (r) { return !(r.l <= c.l && r.r >= c.r && r.t <= c.t && r.b >= c.b); });
+          [['right', c.r, 1], ['left', c.l, -1]].forEach(function (sd) {
+            var E = sd[1], cx = E - sd[2] * 6 * s;
+            if (c.r - c.l < 30 * s) return;   // too narrow to hide behind
+            var pk = sd[2] > 0 ? { l: E, r: E + 12 * s, t: y + 14 * s, b: y + 40 * s } : { l: E - 12 * s, r: E, t: y + 14 * s, b: y + 40 * s };
+            if (inside(pk, v) && !hits(pk, others)) out.push({ x: cx - w / 2, y: y, facing: sd[0], card: card });
+          });
+        });
+        return out.length ? pick(out) : null;
+      }
       function covered() {
-        if (kind === 'bonk' || kind === 'square') return false;   // touching things on purpose
+        if (kind === 'bonk' || kind === 'square' || kind === 'hide') return false;   // touching / behind things on purpose
         var b = box(pos.x, pos.y, kind, facing);
         return !inside(b, view()) || hits(b, avoidRects(2));
       }
@@ -485,6 +528,50 @@
           rest(); return true;
         },
 
+        // hide and seek: vanishes and turns up behind a card, peeking out of its edge. Click the bit of him
+        // that shows to find him (counted in this browser), or after a while he gives up and comes out
+        hide: async function () {
+          if (!o.hide || !TP) return false;
+          var t = hideSpot(); if (!t) return false;
+          face(null); await play(TP[0]);
+          place(t.x, t.y); face(t.facing); kind = 'hide'; seeking = t.card; foundIt = false;
+          await play(TP[1]);
+          face(t.facing); pose('peek');
+          var until = performance.now() + rnd(12000, 16000);
+          while (!foundIt && performance.now() < until) await sleep(150);
+          var won = !foundIt; seeking = null; foundIt = false;
+          if (!won) {
+            // jumps out in front of the card
+            var s = scale(), nx = pos.x + (t.facing === 'right' ? 1 : -1) * 26 * s;
+            kind = 'stand'; face(null);
+            al.style.transition = 'left 160ms ease-out'; al.style.left = nx + 'px'; pos = { x: nx, y: pos.y };
+            pose('found');
+            var n = 1; try { n = (+localStorage.getItem('alFound') || 0) + 1; localStorage.setItem('alFound', n); } catch (e) { }
+            say(n === 1 ? 'You found me! First try, impressive.' : 'You found me! That\'s ' + n + ' times now.', 3200);
+            await sleep(dur('found') + 900);
+          }
+          // back out to a free spot
+          kind = 'stand'; face(null); await play(TP[0]);
+          var f = findSpot('stand', true);
+          if (!f) { hide(true); return true; }
+          place(f.x, f.y); hide(false); await play(TP[1]);
+          if (won) say(pick(['Nobody found me... I win again.', 'Hide and seek champion. Still undefeated.']), 2600);
+          rest(); return true;
+        },
+
+        // the CV was opened: conjures it, reads it (more and more impressed), stamps it HIRED, shows it off
+        cv: async function () {
+          if (hidden) return false;
+          cvQueued = false; face(null); kind = 'stand';
+          await play('cv-out');
+          say(pick(['Reading... impressive... very impressive...', 'Hmm. Hmm! HMM!', 'Let me just check this guy out...']), 2400);
+          await play('cv-read');
+          await play('cv-stamp');
+          say(pick(['HIRED! Obviously.', 'Stamped and approved.', 'Verdict: HIRED.']), 2400);
+          await play('cv-show');
+          rest(); return true;
+        },
+
         // runs on top of the spinning square, gets carried to the edge, tumbles off, lies dazed, gets up
         square: async function () {
           var el = o.spinner && document.querySelector(o.spinner);
@@ -620,6 +707,7 @@
         return a;
       }
       function nextAct() {
+        if (cvQueued && !hidden) return 'cv';   // the CV was just opened
         var q = window.AlRoam.next; window.AlRoam.next = null;
         if (!ACTS[q] && sp && !spDone && finished >= (sp.after || 0) && performance.now() >= (sp.at || 0)) return sp.act;
         if (ACTS[q]) { var k = bag.indexOf(q); if (k >= 0) bag.splice(k, 1); return q; }   // AlRoam.next = 'hack' (testing)
@@ -627,9 +715,9 @@
         return bag.shift();
       }
 
-      async function life() {
+      async function life(quick) {
         try {
-          await sleep(rnd(2500, 4000));
+          await sleep(quick || cvQueued ? 500 : rnd(2500, 4000));
           for (;;) {
             var n = nextAct(), hist = window.AlRoam.history;
             busy = true;
@@ -665,7 +753,7 @@
       // back to the resting spot (or a free one) and start over (resize, coming back to the tab)
       function reset() {
         gen++; busy = false; moving = false; kind = 'stand';
-        falling = landing = powering = false; clearTimeout(fallStop); al.style.translate = ''; endFx();
+        falling = landing = powering = guiding = foundIt = false; seeking = null; clearTimeout(fallStop); al.style.translate = ''; endFx();
         al.removeAttribute('worlds');
         if (!o.home) { if (live) { hide(true); relocate(); } return; }   // before his entrance: leave it to the entrance
         al.style.width = o.home.offsetWidth + 'px';
@@ -928,6 +1016,14 @@
       }
       var clicks = [];
       document.addEventListener('click', function (e) {
+        if (seeking) {
+          // found: a click on the bit of him peeking out (a click on the card itself still opens the card)
+          // (only a sliver of him shows, so anywhere just beside the card where he is counts)
+          var c = seeking.getBoundingClientRect(), r = al.getBoundingClientRect(), u = r.width / 56;
+          var near = !hidden && e.clientX > r.left - 4 * u && e.clientX < r.right + 4 * u && e.clientY > r.top + 8 * u && e.clientY < r.bottom;
+          if (near && (e.clientX < c.left || e.clientX > c.right || e.clientY < c.top || e.clientY > c.bottom)) foundIt = true;
+          return;
+        }
         if (!onHim(e.clientX, e.clientY) || (e.target.closest && e.target.closest(CLICKABLE))) return;
         if (o.clickPower && !falling && !landing && !powering) {
           var now = Date.now();
@@ -941,16 +1037,130 @@
         face(null); pose('wave'); clearTimeout(waveT);
         waveT = setTimeout(function () { if (!busy) rest(); }, 1600);
       });
-      var hov = false;
+      // with a mouse: his eyes follow the cursor; whoosh it past him and he ducks; rest it on him and he
+      // gets shy (rubs the back of his head), then waves
+      var hov = false, shyT, lastM = null, duckAt = 0;
+      function idleTo(p, then) {
+        pose(p); clearTimeout(waveT);
+        waveT = setTimeout(function () { if (busy) return; if (then) then(); else rest(); }, dur(p));
+      }
       document.addEventListener('mousemove', function (e) {
         var on = onHim(e.clientX, e.clientY) && !(e.target.closest && e.target.closest(CLICKABLE));
-        if (on !== hov) { hov = on; document.documentElement.classList.toggle('al-hover', on); }
+        if (on !== hov) {
+          hov = on; document.documentElement.classList.toggle('al-hover', on);
+          clearTimeout(shyT);
+          if (on) shyT = setTimeout(function () {
+            if (hov && !busy && !hidden && !seeking) idleTo('shy', function () { idleTo('wave'); });
+          }, 1300);
+        }
+        if (hidden || !al.look) return;
+        var r = al.getBoundingClientRect(), hx = r.left + r.width / 2, hy = r.top + r.height * 0.28;
+        var dx = e.clientX - hx, dy = e.clientY - hy, d = Math.hypot(dx, dy);
+        var dir = d > 380 ? null : dy < -40 && Math.abs(dx) < 60 ? 'u' : dx < -14 ? 'l' : dx > 14 ? 'r' : null;
+        if (facing === 'left' && (dir === 'l' || dir === 'r')) dir = dir === 'l' ? 'r' : 'l';   // he's mirrored
+        al.look(dir);
+        // a fast swipe close past him
+        var now = e.timeStamp;
+        if (lastM && now > lastM.t) {
+          var sx = e.clientX - lastM.x, sy = e.clientY - lastM.y, sl = sx * sx + sy * sy, v = Math.sqrt(sl) / (now - lastM.t);
+          // how close the swipe (from the last point to this one) came to his head
+          var k = sl ? Math.max(0, Math.min(1, ((hx - lastM.x) * sx + (hy - lastM.y) * sy) / sl)) : 0;
+          var near = Math.hypot(lastM.x + k * sx - hx, lastM.y + k * sy - hy);
+          if (v > 3 && near < 150 && !busy && !hidden && !hov && performance.now() - duckAt > 5000) { duckAt = performance.now(); face(null); idleTo('duck'); }
+        }
+        lastM = { x: e.clientX, y: e.clientY, t: now };
       }, { passive: true });
+      document.documentElement.addEventListener('mouseleave', function () { if (al.look) al.look(null); });
+
+      // ── tour guide: hover a project card and he comes over, points at it and talks about it ──
+      var guideT, guided = null, guideAt = 0, guiding = false;
+      function freeze() {
+        clearTimeout(waveT); al.style.translate = '';
+        var r = rel(al.getBoundingClientRect()); place(r.l, r.t);
+        removeGhosts(); al.removeAttribute('worlds');
+      }
+      // the free spot closest to the card (and not too far from him)
+      function guideSpot(card) {
+        var c = rel(card.getBoundingClientRect()), best = null, bd = 1e9;
+        spots('stand', true).forEach(function (sp) {
+          var b = box(sp.x, sp.y, 'stand');
+          var gap = Math.hypot(Math.max(c.l - b.r, 0, b.l - c.r), Math.max(c.t - b.b, 0, b.t - c.b));
+          if (gap > 170) return;
+          var dd = gap * 2 + Math.hypot(sp.x - pos.x, sp.y - pos.y) * 0.3;
+          if (dd < bd) { bd = dd; best = sp; }
+        });
+        return best;
+      }
+      async function guide(card) {
+        if (!live || gone || falling || landing || powering || seeking || relocating || kind === 'square') return;
+        if (al.getAttribute('pose') && /^cv-/.test(al.getAttribute('pose'))) return;   // busy reading the CV
+        if (performance.now() - guideAt < 1200) return;
+        var t = guideSpot(card);
+        if (!t && hidden) return;
+        guideAt = performance.now(); guided = card;
+        gen++; busy = true; guiding = true; moving = false; kind = 'stand';
+        freeze();
+        var name = (card.querySelector(o.guide.name) || card).textContent.trim();
+        try {
+          if (t) {
+            var far = hidden || Math.hypot(t.x - pos.x, t.y - pos.y) > 170 * scale();
+            if (far && TP) {
+              if (!hidden) { face(null); await play(TP[0]); }
+              place(t.x, t.y); hide(false); await play(TP[1]);
+            } else await walkTo(t.x, t.y);
+          }
+          var c = card.getBoundingClientRect(), me = al.getBoundingClientRect();
+          face((c.left + c.right) / 2 < me.left + me.width / 2 ? 'left' : 'right');
+          pose('point');
+          say(projectLine(name), 4200);
+          await sleep(3200);
+          rest(); guiding = false; busy = false;
+          life();
+        } catch (e) { guiding = false; if (e !== CANCEL) throw e; }
+      }
+      if (o.guide) {
+        document.addEventListener('mouseover', function (e) {
+          var card = e.target.closest && e.target.closest(o.guide.cards);
+          if (!card || card === guided) return;
+          clearTimeout(guideT);
+          guideT = setTimeout(function () { if (card.matches(':hover')) guide(card); }, 450);
+        });
+        // clicking the card he just showed you: he reacts as soon as he can be seen again (the card
+        // usually opens something over him, so mostly once you close it)
+        var pickT = 0;
+        document.addEventListener('click', function (e) {
+          var card = e.target.closest && e.target.closest(o.guide.cards);
+          if (!card || card !== guided || performance.now() - guideAt > 15000) return;
+          clearInterval(pickT);
+          var t0 = performance.now();
+          pickT = setInterval(function () {
+            if (performance.now() - t0 > 60000) return clearInterval(pickT);
+            if (performance.now() - t0 < 350 || hidden || gone || falling || landing || powering || seeking || relocating || document.hidden) return;
+            if (hits(box(pos.x, pos.y, 'stand', facing), avoidRects(2))) return;
+            clearInterval(pickT);
+            say(pick(['Good pick!', 'Told you it was good.', 'Great choice. I helped. A bit.']), 2200);
+          }, 400);
+        });
+      }
+
+      // ── the CV: opening it makes him read it and stamp it HIRED (if it opened in a new tab, he does it
+      // as soon as you come back) ──
+      var cvQueued = false;
+      if (o.cv) document.addEventListener('click', function (e) {
+        if (!(e.target.closest && e.target.closest(o.cv)) || gone) return;
+        cvQueued = true;
+        setTimeout(function () {
+          if (!cvQueued || document.hidden || !live || falling || landing || powering || seeking || relocating) return;
+          gen++; busy = false; moving = false; guiding = false; kind = 'stand';
+          freeze();
+          if (hidden) relocate(); else life(true);
+        }, 150);
+      }, true);
 
       // ── falling while the page scrolls (fixed stage) ──
       var falling = false, landing = false, fallT0 = 0, fallStop, fallAcc = 0, accT, lastY = window.scrollY, vel = 0, fallPose = '', shakeId = 0;
       function startFall() {
-        gen++; endFx(); falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand'; powering = false;
+        gen++; endFx(); falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand'; powering = guiding = foundIt = false; seeking = null;
         fallT0 = performance.now();
         al.style.translate = '';
         var r = rel(al.getBoundingClientRect()), v = view(), w = al.offsetWidth, h = al.offsetHeight;

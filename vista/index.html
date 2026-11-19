@@ -1401,8 +1401,10 @@ stage:document.getElementById('desktop'),z:2,teleport:'minimize',watch:true,dela
 avoid:'.desk-icon,.window.active:not(.minimized),#sidebar,#taskbar,#startMenu.open,#switchThemeBtn,#ctxMenu,#binCtx,.tray-popup.open,#calBalloon,#balloonBox>*',
 text:'.desk-icon,#taskbar',
 bump:'.window.active:not(.minimized)',
-acts:['wander','pushups','bonk','juggle','uac','update','bsod','solitaire'],
-bubble:'vista',quips:quips
+acts:['wander','pushups','bonk','juggle','uac','update','bsod','solitaire','hide'],
+bubble:'vista',quips:quips,
+// hover a project in the Projects window: he points at it and talks about it; hide and seek behind open windows
+guide:{cards:'#projectsBody .proj-item',name:'.proj-name'},hide:'.window.active:not(.minimized)'
 });
 }
 new MutationObserver(go).observe(document.body,{attributes:true,attributeFilter:['class']});

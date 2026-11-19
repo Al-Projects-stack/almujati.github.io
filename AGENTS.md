@@ -138,6 +138,12 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
 - Click Al anywhere he is: a speech bubble over his head with a joke about one of the projects (15 shared lines in `assets/al-roam.js` QUIPS, shuffled, no repeats until all are said, plus 2 to 3 per page via `quips`); mid-fall he yells instead. He waves if he's free. The cursor turns into a pointer over him; clicks on links/buttons/cards under him still go to them. Bubble styles: `bubble: 'cyber'` (dark, cyan border, monospace), `'vista'` (white Aero-ish), default plain purple. It follows him, stays on screen, flips under his feet near the top; in strip mode it sits beside him inside his strip so it doesn't cover the page
 - Phones (`tip`): shortly after his entrance (once he's actually visible, not behind Vista's boot screen) and every 4th click he says to try it on a laptop: world picker, Cyber strip and Vista strip each have their own line. Vista's phone Al now waits for the boot screen to finish before his entrance
 
+### Session 17 — Tour guide, hide and seek, CV stamp, eyes that follow you
+- Tour guide (`guide: {cards, name}`, Cyber `.proj-card`, Vista `#projectsBody .proj-item`): hover a project for 450ms and he walks or teleports beside it, faces it, points (`point` pose) and says that project's line (`PROJECT_LINES`). Clicking the card he showed you gets a "Good pick!" once he can be seen again (usually after the modal closes)
+- Hide and seek (`hide` act, selector option): teleports behind a fully visible card/window near a side edge so his head peeks out, for 12 to 16s (`peek` pose). Clicking just beside the card where he peeks finds him: he jumps out (`found`), count kept in `localStorage` `alFound`. Otherwise "Nobody found me... I win again." On Vista he hides behind the frosted glass windows
+- CV stamp (`cv`, Cyber `#cv-btn, .cv-dl`): opening or downloading the CV makes him conjure it, read it (more and more impressed), stamp it HIRED and hold it up (`cv-out`, `cv-read`, `cv-stamp`, `cv-show`); if it opened in a new tab he does it when you come back
+- Eyes follow the cursor within 380px (`al.look('l'|'r'|'u'|null)`, head shifts a pixel); a fast swipe past his head (checked along the swipe segment) makes him duck; resting the cursor on him makes him shy, then wave (both only between activities)
+
 ---
 
 ## File Structure

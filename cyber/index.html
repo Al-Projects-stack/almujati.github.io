@@ -2437,7 +2437,7 @@
           AlRoam.start(al, {
             stage: strip, teleport: 'glitch', bounds: strip, floor: true, delay: followed ? 150 : 400,
             acts: ['wander', 'pushups', 'pc', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag'],
-            bubble: 'cyber', quips: quips, clickPower: true, quake: quake,
+            bubble: 'cyber', quips: quips, clickPower: true, quake: quake, cv: '#cv-btn, .cv-dl',
             tip: 'Psst... they squeezed me into this tiny strip. Open this on a laptop for the full show!'
           });
           return;
@@ -2446,12 +2446,15 @@
           stage: 'fixed', z: 1, teleport: 'glitch', watch: true,
           // scrolling shakes his world: he falls while the page moves and hits the floor when it stops
           fall: true, bubble: 'cyber', quips: quips, clickPower: true, quake: quake,
+          // hover a project card: he points at it and talks about it; hide and seek behind the solid cards;
+          // opening the CV: he reads it and stamps it HIRED
+          guide: { cards: '.proj-card', name: 'h3, h4' }, hide: '.proj-card, .panel, .proj-slideshow, .avail-panel', cv: '#cv-btn, .cv-dl',
           // scan .container for real content so he can use the open space inside sections;
           // the hero heading (typewriter word grows) and the photo box count as whole blocks
           content: '.container',
           avoid: '.hero h1, .profile-box, #nav-sticky, #switchThemeBtn, .floating-tag, #scroll-top, .kb-hint, #toast, #proj-modal',
           bump: '.panel, .proj-slideshow, .profile-box, .avail-panel, .proj-card',
-          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag'],
+          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'hide'],
           // once per visit, after two activities and 6s on the page: runs on the spinning square behind the photo
           spinner: '.avatar-wrap', special: { act: 'square', after: 2, at: 6000 }
         });
