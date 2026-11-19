@@ -2424,6 +2424,8 @@
       al.className = 'al-roamer';
       var phone = window.matchMedia('(max-width: 820px)').matches, strip = document.querySelector('.al-strip');
       // click him: a project joke (plus the shared ones in al-roam.js)
+      // what shakes when he powers up: the content, the backdrop layers, the fixed buttons and his own layer
+      var quake = '.container, #nav-sticky, .bg-grid, .orb, #bg-canvas, #scroll-top, .floating-tag, #switchThemeBtn, body > .al-stage';
       var quips = [
         'Careful with that spinning square behind the photo. Speaking from experience.',
         'I flash-stepped across this whole page and still beat the loader.',
@@ -2434,8 +2436,8 @@
           // phones: he lives in his strip, feet on its floor line, and scrolls with the page
           AlRoam.start(al, {
             stage: strip, teleport: 'glitch', bounds: strip, floor: true, delay: followed ? 150 : 400,
-            acts: ['wander', 'pushups', 'pc', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'powerup'],
-            bubble: 'cyber', quips: quips,
+            acts: ['wander', 'pushups', 'pc', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag'],
+            bubble: 'cyber', quips: quips, clickPower: true, quake: quake,
             tip: 'Psst... they squeezed me into this tiny strip. Open this on a laptop for the full show!'
           });
           return;
@@ -2443,13 +2445,13 @@
         AlRoam.start(al, {
           stage: 'fixed', z: 1, teleport: 'glitch', watch: true,
           // scrolling shakes his world: he falls while the page moves and hits the floor when it stops
-          fall: true, bubble: 'cyber', quips: quips,
+          fall: true, bubble: 'cyber', quips: quips, clickPower: true, quake: quake,
           // scan .container for real content so he can use the open space inside sections;
           // the hero heading (typewriter word grows) and the photo box count as whole blocks
           content: '.container',
           avoid: '.hero h1, .profile-box, #nav-sticky, #switchThemeBtn, .floating-tag, #scroll-top, .kb-hint, #toast, #proj-modal',
           bump: '.panel, .proj-slideshow, .profile-box, .avail-panel, .proj-card',
-          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'powerup'],
+          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag'],
           // once per visit, after two activities and 6s on the page: runs on the spinning square behind the photo
           spinner: '.avatar-wrap', special: { act: 'square', after: 2, at: 6000 }
         });

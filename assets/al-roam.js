@@ -33,15 +33,17 @@
                 hits the floor at the nearest free spot when it stops,
       bubble:   speech bubble style: 'cyber' | 'vista' (default plain),
       quips:    extra lines he says when clicked (on top of the shared project jokes),
-      tip:      a line he says soon after he appears and every few clicks (the "use a laptop" nudge)
+      tip:      a line he says soon after he appears and every few clicks (the "use a laptop" nudge),
+      clickPower: true: three quick clicks on him set off his glitched power-up (spiky glowing hair,
+                flickering aura); the second click warns you,
+      quake:    selector of what shakes during the power-up (the page's content and backdrop layers)
     });
 
   Click him and he says something about one of the projects (in a speech bubble over his head).
 
   Shared:  wander, pushups, pc, bonk, juggle
   Cyber:   hack (hologram), bug (stomps a bug), hover (hoverboard ride), glitch (teleports),
-           flash (flash step with afterimages), clones (shadow clones), lag (lag spike),
-           powerup (glitched power-up: spiky glowing hair, flickering aura)
+           flash (flash step with afterimages), clones (shadow clones), lag (lag spike)
   Vista:   uac (Cancel or Allow?), update (Windows Update nap), bsod (PC blue-screens), solitaire
 
   Returns { leave(pose) } (stops him and plays an exit pose; resolves when it's done), or nothing
@@ -483,24 +485,6 @@
           rest(); return true;
         },
 
-        // glitched power-up: charges (shaking), bursts, hair spikes up glowing in a flickering aura, powers down
-        powerup: async function () {
-          var t = findSpot('power');
-          if (!t) return false;
-          await goTo(t, 'power'); face(null);
-          var g0 = gen, s = scale(), quake = setInterval(function () {
-            if (gen !== g0 || al.getAttribute('pose') !== 'power-up') { clearInterval(quake); al.style.translate = ''; return; }
-            var a = 1.6 * s; al.style.translate = rnd(-a, a).toFixed(1) + 'px ' + rnd(-a / 2, a / 2).toFixed(1) + 'px';
-          }, 50);
-          pose('power-up');
-          await sleep(600); say(pick(['HAAAAAAAAA!!', 'Power level: buffering...', 'Compiling... MAX POWER!']), 1600);
-          await sleep(dur('power-up') - 600);
-          clearInterval(quake); al.style.translate = '';
-          pose('powered'); await sleep(rnd(2200, 3200));
-          await play('power-down');
-          rest(); return true;
-        },
-
         // runs on top of the spinning square, gets carried to the edge, tumbles off, lies dazed, gets up
         square: async function () {
           var el = o.spinner && document.querySelector(o.spinner);
@@ -681,7 +665,7 @@
       // back to the resting spot (or a free one) and start over (resize, coming back to the tab)
       function reset() {
         gen++; busy = false; moving = false; kind = 'stand';
-        falling = landing = false; clearTimeout(fallStop); al.style.translate = '';
+        falling = landing = powering = false; clearTimeout(fallStop); al.style.translate = ''; endFx();
         al.removeAttribute('worlds');
         if (!o.home) { if (live) { hide(true); relocate(); } return; }   // before his entrance: leave it to the entrance
         al.style.width = o.home.offsetWidth + 'px';
@@ -709,7 +693,7 @@
       if (o.watch) {
         window.addEventListener('scroll', function () { lastScroll = Date.now(); }, { passive: true });
         setInterval(function () {
-          if (!live || relocating || falling || landing || document.hidden || moving || Date.now() - lastScroll < 400) return;
+          if (!live || relocating || falling || landing || powering || document.hidden || moving || Date.now() - lastScroll < 400) return;
           // covered on two checks running (so a passing tooltip or ripple doesn't send him off)
           if (hidden || (covered() ? ++coverHits >= 2 : (coverHits = 0))) { coverHits = 0; relocate(); }
         }, 700);
@@ -787,8 +771,171 @@
         return x > r.left + 12 * u && x < r.left + 44 * u && y > r.top + 12 * u && y < r.bottom;
       }
       var CLICKABLE = 'a,button,input,textarea,select,label,summary,[role=button],[onclick]';
+      // glitched power-up (clickPower, 3 quick clicks): stops right where he is, charges (shaking),
+      // bursts, hair spikes up glowing in a flickering aura, holds it, powers down, carries on
+      var powering = false, fxNow = null;
+      function endFx() { if (fxNow) { fxNow.stop(); fxNow = null; } }
+      // the world can't take it: the page shakes (o.quake elements), cracks spread across the floor from
+      // his feet while he charges, and at the burst the screen cracks like glass from his chest (pixel
+      // lines with cyan / magenta glitch edges), a white flash, chips flying, nearby cards jolt.
+      // Powering down, the cracks glitch and heal away. Stops cleanly if he's interrupted.
+      function powerFx(g0) {
+        var K = 3, W = Math.ceil(window.innerWidth / K), H = Math.ceil(window.innerHeight / K);
+        var cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.setAttribute('aria-hidden', 'true');
+        cv.style.cssText = 'position:fixed;left:0;top:0;width:' + W * K + 'px;height:' + H * K + 'px;z-index:2147482990;pointer-events:none;image-rendering:pixelated';
+        document.body.appendChild(cv);
+        var c = cv.getContext('2d');
+        // he stays in front of it all: lifted onto his own layer just above the cracks (under his speech
+        // bubble), held steady at his spot while everything behind him shakes and breaks
+        var front = document.createElement('div'), home = al.parentNode, next = al.nextSibling;
+        front.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;z-index:2147482995;pointer-events:none';
+        front.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(front);
+        var shakers = o.quake ? [].slice.call(document.querySelectorAll(o.quake)).filter(function (el) { return shown(el) && el !== stage; }) : [];
+        var holder = null, held = { x: 0, y: 0 };   // the shaking element his stage sits in (phones: the page), and its jolt
+        shakers.forEach(function (el) { if (el.contains(stage)) holder = el; });
+        function pin() {
+          var g = origin();
+          al.style.left = (g.x - held.x + pos.x) + 'px'; al.style.top = (g.y - held.y + pos.y) + 'px';
+        }
+        front.appendChild(al); al.style.transition = 'none'; pin();
+        var r = al.getBoundingClientRect(), ox = (r.left + r.width / 2) / K, feet = (r.bottom - r.height * 0.03) / K, chest = (r.top + r.height * 0.5) / K;
+        var ground = [], glass = [], chips = [];
+        // a jagged crack: short segments, wandering, sometimes branching; t = distance from where it started
+        function grow(list, x, y, a, len, depth, t, wob) {
+          wob = wob || 0.45;
+          while (len > 0) {
+            var step = 2 + Math.random() * 3; a += rnd(-wob, wob);
+            var nx = x + Math.cos(a) * step, ny = y + Math.sin(a) * step;
+            list.push([x, y, nx, ny, t]); t += step; len -= step; x = nx; y = ny;
+            if (depth < 3 && Math.random() < (wob < 0.3 ? 0.07 : 0.12)) grow(list, x, y, a + (Math.random() < 0.5 ? -1 : 1) * rnd(0.5, 1.1), len * rnd(0.3, 0.6), depth + 1, t, wob);
+          }
+        }
+        for (var i = 0; i < 6; i++) grow(ground, ox, feet, i % 2 ? rnd(-0.2, 0.45) : Math.PI - rnd(-0.2, 0.45), rnd(22, 55), 0, 0);
+        // glass: straighter spokes, plus broken rings between them
+        for (i = 0; i < 10; i++) grow(glass, ox, chest, i * Math.PI / 5 + rnd(-0.25, 0.25), rnd(60, 170), 0, 0, 0.16);
+        [14, 30, 52].forEach(function (rad) {
+          for (var a0 = rnd(0, 0.6); a0 < Math.PI * 2; a0 += rnd(0.5, 0.9)) {
+            if (Math.random() < 0.35) continue;   // gaps
+            var a1 = a0 + rnd(0.25, 0.5), r0 = rad * rnd(0.85, 1.15), r1 = rad * rnd(0.85, 1.15);
+            glass.push([ox + Math.cos(a0) * r0, chest + Math.sin(a0) * r0, ox + Math.cos(a1) * r1, chest + Math.sin(a1) * r1, 0]);
+          }
+        });
+        function line(sg, dx, dy, col) {
+          c.fillStyle = col;
+          var n = Math.max(1, Math.round(Math.max(Math.abs(sg[2] - sg[0]), Math.abs(sg[3] - sg[1]))));
+          for (var j = 0; j <= n; j++) c.fillRect(Math.round(sg[0] + (sg[2] - sg[0]) * j / n + dx), Math.round(sg[1] + (sg[3] - sg[1]) * j / n + dy), 1, 1);
+        }
+        var amp = 0, target = 0, chargeT0 = 0, chargeMs = 0, reveal = 0, broke = false, flash = 0, healT0 = 0, dead = false, clean = false, last = performance.now();
+        // the page back to normal (the cracks have healed)
+        function tidy() {
+          if (clean) return; clean = true;
+          shakers.forEach(function (el) { el.style.translate = ''; });
+          held = { x: 0, y: 0 };
+          cv.remove();
+        }
+        // and him back on his stage, at the same spot
+        function stop() {
+          if (dead) return; dead = true;
+          tidy();
+          home.insertBefore(al, next && next.parentNode === home ? next : null);
+          front.remove();
+          place(pos.x, pos.y);
+        }
+        fxNow = { stop: stop };
+        (function frame(now) {
+          if (dead) return;
+          if (gen !== g0) return stop();   // interrupted (he started falling, the tab was hidden...)
+          if (clean) { pin(); return requestAnimationFrame(frame); }
+          var dt = Math.min(50, now - last); last = now;
+          if (chargeMs) {
+            var k = Math.min(1, (now - chargeT0) / chargeMs);
+            target = 0.8 + 3.2 * k; reveal = 60 * k;
+          }
+          amp += (target - amp) * 0.12;
+          var heal = healT0 ? Math.min(1, (now - healT0) / 550) : 0;
+          if (heal >= 1) { tidy(); pin(); return requestAnimationFrame(frame); }
+          shakers.forEach(function (el) {
+            var x = amp > 0.2 ? rnd(-amp, amp) : 0, y = amp > 0.2 ? rnd(-amp, amp) : 0;
+            el.style.translate = x || y ? x.toFixed(1) + 'px ' + y.toFixed(1) + 'px' : '';
+            if (el === holder) held = { x: +x.toFixed(1), y: +y.toFixed(1) };
+          });
+          pin();
+          c.clearRect(0, 0, W, H);
+          if (!(heal && Math.random() < 0.4)) {   // healing: flickers out
+            c.globalAlpha = 1 - heal;
+            var jolt = heal || Math.random() < 0.08;
+            [[ground, reveal], [glass, broke ? 1e9 : -1]].forEach(function (L) {
+              L[0].forEach(function (sg) {
+                if (sg[4] > L[1]) return;
+                var g = jolt && Math.random() < 0.3 ? Math.round(rnd(-2, 2)) : 0;
+                line(sg, g + 1, 0, 'rgba(0,212,255,0.55)'); line(sg, g - 1, 0, 'rgba(255,40,170,0.45)'); line(sg, g, 0, '#e6fdff');
+              });
+            });
+            chips.forEach(function (p) {
+              p.x += p.vx * dt / 16; p.y += p.vy * dt / 16; p.vy += 0.09 * dt / 16;
+              c.fillStyle = p.col; c.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s);
+            });
+            if (flash > 0) { c.fillStyle = 'rgba(230,253,255,' + flash.toFixed(2) + ')'; c.fillRect(0, 0, W, H); flash -= dt / 260; }
+            c.globalAlpha = 1;
+          }
+          requestAnimationFrame(frame);
+        })(last);
+        return {
+          charge: function (ms) { chargeT0 = performance.now(); chargeMs = ms; },
+          burst: function () {
+            chargeMs = 0; broke = true; reveal = 1e9; amp = 11; target = 2.2; flash = 0.5;
+            var cols = ['#e6fdff', '#7fe9ff', 'rgba(255,40,170,0.9)', '#ffe27a'];
+            for (var j = 0; j < 46; j++) {
+              var a = rnd(0, Math.PI * 2), v = rnd(0.8, 3.2), from = Math.random() < 0.5 ? [ox, feet] : [ox, chest];
+              chips.push({ x: from[0], y: from[1], vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.2, s: Math.random() < 0.3 ? 2 : 1, col: cols[j % 4] });
+            }
+            // nearby cards take the hit
+            var me = al.getBoundingClientRect(), mx = me.left + me.width / 2;
+            bumps().forEach(function (el) {
+              var b = el.getBoundingClientRect(), d = Math.hypot(Math.max(b.left - mx, 0, mx - b.right), Math.max(b.top - me.bottom, 0, me.top - b.bottom));
+              if (d < 420 && el.animate) {
+                var dir = (b.left + b.right) / 2 < mx ? -1 : 1, m = 10 * (1 - d / 420) + 3;
+                try { el.animate([{ translate: '0 0' }, { translate: dir * m + 'px ' + (-m / 2) + 'px', offset: 0.15 }, { translate: -dir * m * 0.6 + 'px 0', offset: 0.4 }, { translate: dir * m * 0.3 + 'px 0', offset: 0.7 }, { translate: '0 0' }], { duration: 520, easing: 'ease-out' }); } catch (e) { }
+              }
+            });
+          },
+          rumble: function () { target = 1.6; },
+          heal: function () { target = 0; healT0 = performance.now(); },
+          stop: stop
+        };
+      }
+      async function powerUp() {
+        gen++; busy = true; powering = true; moving = false; relocating = false; kind = 'power';
+        clearTimeout(waveT); al.style.translate = '';
+        var r = rel(al.getBoundingClientRect()); place(r.l, r.t);   // stop mid-step
+        removeGhosts(); al.removeAttribute('worlds'); face(null);
+        var g0 = gen, BURST = 1250;   // 'power-up': 260ms + 9 charge frames of 110ms, then the burst
+        var fx = powerFx(g0);
+        try {
+          pose('power-up'); fx.charge(BURST);
+          await sleep(600); say(pick(['HAAAAAAAAA!!', 'Power level: buffering...', 'Compiling... MAX POWER!']), 1600);
+          await sleep(BURST - 600);
+          fx.burst();
+          await sleep(dur('power-up') - BURST);
+          pose('powered'); fx.rumble(); await sleep(rnd(2200, 3200));
+          fx.heal();
+          await play('power-down');
+          endFx();
+          kind = 'stand'; rest(); busy = false; powering = false;
+          life();
+        } catch (e) { powering = false; fx.stop(); if (e !== CANCEL) throw e; }
+      }
+      var clicks = [];
       document.addEventListener('click', function (e) {
         if (!onHim(e.clientX, e.clientY) || (e.target.closest && e.target.closest(CLICKABLE))) return;
+        if (o.clickPower && !falling && !landing && !powering) {
+          var now = Date.now();
+          clicks = clicks.filter(function (t) { return now - t < 1800; }); clicks.push(now);
+          if (clicks.length >= 3) { clicks = []; hush(); powerUp(); return; }
+          if (clicks.length === 2) { say(pick(['Uh oh... one more click and I can\'t hold it in!', 'Careful... I can feel the power glitching up!'])); return; }
+        }
+        if (powering) return;
         say(quip());
         if (busy) return;
         face(null); pose('wave'); clearTimeout(waveT);
@@ -803,7 +950,7 @@
       // ── falling while the page scrolls (fixed stage) ──
       var falling = false, landing = false, fallT0 = 0, fallStop, fallAcc = 0, accT, lastY = window.scrollY, vel = 0, fallPose = '', shakeId = 0;
       function startFall() {
-        gen++; falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand';
+        gen++; endFx(); falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand'; powering = false;
         fallT0 = performance.now();
         al.style.translate = '';
         var r = rel(al.getBoundingClientRect()), v = view(), w = al.offsetWidth, h = al.offsetHeight;
@@ -908,7 +1055,7 @@
         // stop whatever he's doing right where he is and play an exit pose (e.g. on the way to another page)
         leave: function (p) {
           gen++; busy = true; relocating = true; moving = false; gone = true;
-          falling = landing = false; clearTimeout(fallStop); al.style.translate = ''; hush();
+          falling = landing = false; clearTimeout(fallStop); al.style.translate = ''; hush(); endFx();
           var r = rel(al.getBoundingClientRect());
           place(r.l, r.t); face(null); al.removeAttribute('worlds');
           removeGhosts();
