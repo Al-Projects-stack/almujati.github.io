@@ -144,6 +144,19 @@ Dual-theme portfolio: **Cyber Edition** + **Vista Edition** with a theme selecto
 - CV stamp (`cv`, Cyber `#cv-btn, .cv-dl`): opening or downloading the CV makes him conjure it, read it (more and more impressed), stamp it HIRED and hold it up (`cv-out`, `cv-read`, `cv-stamp`, `cv-show`); if it opened in a new tab he does it when you come back
 - Eyes follow the cursor within 380px (`al.look('l'|'r'|'u'|null)`, head shifts a pixel); a fast swipe past his head (checked along the swipe segment) makes him duck; resting the cursor on him makes him shy, then wave (both only between activities)
 
+### Session 18 — Al bug sweep (tested end to end in headless Chromium with real mouse, wheel, keys and touch)
+- Stuck idle: when the once-per-visit square run had no room (narrower laptop windows), it was retried forever and he never did anything else. Now at least one other activity happens before it's tried again
+- Falling: only scrolling the visitor does counts (wheel, touch, scroll keys, pointer press for the scrollbar / nav links), so the page's own scroll shifts (hero typewriter) can't make him fall; one big jump (Page Down, space, a wheel without smooth scrolling) now counts too, not only bursts of events
+- Shy and duck now interrupt calm activities (`react()`: stops where he is, plays the poses, carries on) instead of only firing in the short gaps between activities, so they actually happen; the wave after shy is ~1.4s
+- Tour guide: for a card in the middle of a grid (no room right beside it) he goes to the nearest free spot level with its row and points from there; hovering while he's falling / landing / teleporting / powering up now waits and comes over once he's free (if you're still on the card)
+- Script tags load `al-mascot.js?v=N` / `al-roam.js?v=N` (now 20) so a browser never mixes a new page with old cached Al scripts after a deploy (bump the number in all three pages whenever either script changes)
+
+### Session 19 — Steady hero, Al on the project cards
+- Cyber hero typewriter no longer moves the page: the heading's `min-height` is set to its tallest word (measured on load, after web fonts load, and on resize), so the long words wrapping to an extra line don't push everything below up and down every few seconds
+- Tour guide `onCard` (Cyber): when there's no free spot within ~180px of the hovered card (cards in the middle of the grid, or further down the projects), he dashes and flash-steps onto the card itself, his stage lifted to z 3 over the page (under the nav and modal), standing on its top edge at the end nearer to him (its bottom edge if the top is off screen), points, says the project's line, then flash-steps off to the nearest free spot. The covered-watch leaves him alone while guiding / perched
+- Falling onto a card (scrolling, `onCard`): when the scroll stops and a project card's top edge is under him (or, half the time, the nearest one within ~360px), he drops onto it, superhero-lands, gets a shock (new `shocked` pose: jolt, hands up, "!" over his head), points and says his line about that project, then flash-steps off
+- New pose `shocked*` in `assets/al-mascot.js`
+
 ---
 
 ## File Structure

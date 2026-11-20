@@ -16,7 +16,7 @@
                     bug-in* | stomp* | board-on* | hover | board-off* |
                     fall-in* | fall | fall-fast | fall-warp* | land* | crash* |
                     power-up* | powered | power-down*
-            any:    point (side) | peek (side) | found* | cv-out* | cv-read* | cv-stamp* | cv-show* | duck* | shy*
+            any:    point (side) | peek (side) | found* | shocked* | cv-out* | cv-read* | cv-stamp* | cv-show* | duck* | shy*
     .look(dir)  'l' | 'r' | 'u' | null: his eyes (and head, a pixel) turn that way in front-facing poses
             Vista:  minimize* | restore* | uac* | uac-click* | facepalm* | sit-down* | update-wait |
                     doze | update-done* | stand-up* | bsod* | solitaire*
@@ -601,6 +601,14 @@
       { dur: 220, happy: true, hop: 1, l: UP.l, r: UP.r },
       { dur: 300, happy: true }
     ],
+    // shocked: jolts, hands up, "!" over his head, then settles
+    shocked: [
+      { dur: 80, shock: true, hop: 3, l: [100, 140, 8], r: [100, 140, 8], bang: [19, 5] },
+      { dur: 120, shock: true, hop: 1, l: [120, 160, 8], r: [120, 160, 8], bang: [19, 5] },
+      { dur: 520, shock: true, l: [110, 150, 8], r: [110, 150, 8], bang: [19, 6] },
+      { dur: 200, shock: true, l: [60, 90, 7], r: [60, 90, 7] },
+      { dur: 260 }
+    ],
     // the CV: rubs his hands, conjures it, unrolls it, reads it (more and more impressed), raises a rubber
     // stamp, slams HIRED on it, holds it up over his head, poofs it away
     'cv-out': [
@@ -739,7 +747,7 @@
     'sit-down': 1, 'update-done': 1, 'stand-up': 1, bsod: 1, solitaire: 1,
     'dash-ready': 1, 'flash-out': 1, 'flash-in': 1, 'dash-stop': 1, split: 1, lag: 1,
     'fall-in': 1, 'fall-warp': 1, land: 1, crash: 1, 'power-up': 1, 'power-down': 1,
-    found: 1, 'cv-out': 1, 'cv-read': 1, 'cv-stamp': 1, 'cv-show': 1, duck: 1, shy: 1
+    found: 1, shocked: 1, 'cv-out': 1, 'cv-read': 1, 'cv-stamp': 1, 'cv-show': 1, duck: 1, shy: 1
   };
 
   function Painter(ctx) { this.c = ctx; this.ox = XO; this.oy = 0; }

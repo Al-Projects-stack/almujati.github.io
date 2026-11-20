@@ -37,8 +37,9 @@
       clickPower: true: three quick clicks on him set off his glitched power-up (spiky glowing hair,
                 flickering aura); the second click warns you,
       quake:    selector of what shakes during the power-up (the page's content and backdrop layers),
-      guide:    { cards, name }: hover a project card and he comes over, points at it and says something
-                about that project (name = selector of the card's title),
+      guide:    { cards, name, onCard }: hover a project card and he comes over, points at it and says something
+                about that project (name = selector of the card's title); onCard: true (or a z-index): when
+                there's no room near the card he flash-steps onto it, his layer lifted over the page,
       hide:     selector of solid cards he can hide behind for hide and seek (the 'hide' activity),
       cv:       selector of the CV links: opening the CV makes him read it and stamp it HIRED
     });
@@ -304,7 +305,7 @@
         return out.length ? pick(out) : null;
       }
       function covered() {
-        if (kind === 'bonk' || kind === 'square' || kind === 'hide') return false;   // touching / behind things on purpose
+        if (kind === 'bonk' || kind === 'square' || kind === 'hide' || perched) return false;   // touching / behind / on things on purpose
         var b = box(pos.x, pos.y, kind, facing);
         return !inside(b, view()) || hits(b, avoidRects(2));
       }
@@ -694,7 +695,8 @@
         return { kind: kind, box: b, inView: inside(b, v), hits: avoidRects(2).filter(function (r) { return hits(b, [r]); }) };
       };
       var names = (o.acts || ['wander', 'pushups', 'pc', 'bonk', 'juggle']).filter(function (n, i, all) { return ACTS[n] && all.indexOf(n) === i; });
-      var sp = o.special && ACTS[o.special.act] ? o.special : null, spDone = false, finished = 0;
+      // spWait: when the special has no room, at least one other activity happens before it's tried again
+      var sp = o.special && ACTS[o.special.act] ? o.special : null, spDone = false, finished = 0, spWait = 0;
 
       // shuffle bag: every activity once, in random order, before any of them comes round again.
       // One that can't happen right now (no room for it) goes to the back of this round instead of
@@ -709,7 +711,7 @@
       function nextAct() {
         if (cvQueued && !hidden) return 'cv';   // the CV was just opened
         var q = window.AlRoam.next; window.AlRoam.next = null;
-        if (!ACTS[q] && sp && !spDone && finished >= (sp.after || 0) && performance.now() >= (sp.at || 0)) return sp.act;
+        if (!ACTS[q] && sp && !spDone && finished >= Math.max(sp.after || 0, spWait) && performance.now() >= (sp.at || 0)) return sp.act;
         if (ACTS[q]) { var k = bag.indexOf(q); if (k >= 0) bag.splice(k, 1); return q; }   // AlRoam.next = 'hack' (testing)
         if (!bag.length) bag = shuffled();
         return bag.shift();
@@ -725,6 +727,7 @@
             busy = false; kind = 'stand';
             hist.push(ok ? n : n + '?'); if (hist.length > 60) hist.shift();   // what he did ('?' = no room, retried later)
             if (ok) { last = n; finished++; if (sp && n === sp.act) spDone = true; }
+            else if (sp && n === sp.act) spWait = finished + 1;
             else if (bag.length && names.indexOf(n) >= 0) bag.push(n);   // try it again later this round
             await sleep(ok ? rnd(3000, 5500) : 1500);
             if (o.home && ok && Math.random() < 0.3) {
@@ -781,7 +784,7 @@
       if (o.watch) {
         window.addEventListener('scroll', function () { lastScroll = Date.now(); }, { passive: true });
         setInterval(function () {
-          if (!live || relocating || falling || landing || powering || document.hidden || moving || Date.now() - lastScroll < 400) return;
+          if (!live || relocating || falling || landing || powering || guiding || document.hidden || moving || Date.now() - lastScroll < 400) { coverHits = 0; return; }
           // covered on two checks running (so a passing tooltip or ripple doesn't send him off)
           if (hidden || (covered() ? ++coverHits >= 2 : (coverHits = 0))) { coverHits = 0; relocate(); }
         }, 700);
@@ -1040,9 +1043,23 @@
       // with a mouse: his eyes follow the cursor; whoosh it past him and he ducks; rest it on him and he
       // gets shy (rubs the back of his head), then waves
       var hov = false, shyT, lastM = null, duckAt = 0;
-      function idleTo(p, then) {
-        pose(p); clearTimeout(waveT);
-        waveT = setTimeout(function () { if (busy) return; if (then) then(); else rest(); }, dur(p));
+      // calm moments he can be pulled out of (not mid-fall, power-up, hiding, guiding, the square run,
+      // lying on the floor or reading the CV)
+      function calm() {
+        return live && !gone && !hidden && !falling && !landing && !powering && !seeking && !guiding && !relocating &&
+          kind !== 'square' && kind !== 'bonk' && !/^cv-/.test(al.getAttribute('pose') || '');
+      }
+      // stops what he's doing right where he is, plays the poses in turn, then carries on with his day
+      function react(list) {
+        if (!calm()) return false;
+        gen++; freeze(); busy = true; moving = false; kind = 'stand'; face(null);
+        var g = gen;
+        (function next(i) {
+          if (g !== gen) return;
+          if (i >= list.length) { rest(); busy = false; life(); return; }
+          pose(list[i]); waveT = setTimeout(function () { next(i + 1); }, dur(list[i]));
+        })(0);
+        return true;
       }
       document.addEventListener('mousemove', function (e) {
         var on = onHim(e.clientX, e.clientY) && !(e.target.closest && e.target.closest(CLICKABLE));
@@ -1050,7 +1067,7 @@
           hov = on; document.documentElement.classList.toggle('al-hover', on);
           clearTimeout(shyT);
           if (on) shyT = setTimeout(function () {
-            if (hov && !busy && !hidden && !seeking) idleTo('shy', function () { idleTo('wave'); });
+            if (hov) react(['shy', 'wave', 'wave', 'wave']);
           }, 1300);
         }
         if (hidden || !al.look) return;
@@ -1066,7 +1083,7 @@
           // how close the swipe (from the last point to this one) came to his head
           var k = sl ? Math.max(0, Math.min(1, ((hx - lastM.x) * sx + (hy - lastM.y) * sy) / sl)) : 0;
           var near = Math.hypot(lastM.x + k * sx - hx, lastM.y + k * sy - hy);
-          if (v > 3 && near < 150 && !busy && !hidden && !hov && performance.now() - duckAt > 5000) { duckAt = performance.now(); face(null); idleTo('duck'); }
+          if (v > 3 && near < 150 && !hov && performance.now() - duckAt > 5000 && react(['duck'])) duckAt = performance.now();
         }
         lastM = { x: e.clientX, y: e.clientY, t: now };
       }, { passive: true });
@@ -1079,29 +1096,124 @@
         var r = rel(al.getBoundingClientRect()); place(r.l, r.t);
         removeGhosts(); al.removeAttribute('worlds');
       }
-      // the free spot closest to the card (and not too far from him)
+      // the free spot closest to the card, level with it (a card in the middle of a grid has no room
+      // right beside it, so he points at it from the gutter on its row)
       function guideSpot(card) {
-        var c = rel(card.getBoundingClientRect()), best = null, bd = 1e9;
+        var c = rel(card.getBoundingClientRect()), best = null, bd = 1e9, cy = (c.t + c.b) / 2;
         spots('stand', true).forEach(function (sp) {
           var b = box(sp.x, sp.y, 'stand');
           var gap = Math.hypot(Math.max(c.l - b.r, 0, b.l - c.r), Math.max(c.t - b.b, 0, b.t - c.b));
-          if (gap > 170) return;
-          var dd = gap * 2 + Math.hypot(sp.x - pos.x, sp.y - pos.y) * 0.3;
-          if (dd < bd) { bd = dd; best = sp; }
+          if (gap > 700) return;
+          var dd = gap * 2 + Math.abs((b.t + b.b) / 2 - cy) * 1.5 + Math.hypot(sp.x - pos.x, sp.y - pos.y) * 0.3;
+          if (dd < bd) { bd = dd; best = sp; best.gap = gap; }
         });
         return best;
       }
-      async function guide(card) {
-        if (!live || gone || falling || landing || powering || seeking || relocating || kind === 'square') return;
+      // no room near the card (onCard): dashes and flash-steps onto the card itself, his layer lifted over
+      // the page, stands on its top edge (its bottom edge if the top is off screen), points and talks,
+      // then flashes back off to a free spot
+      var perched = false, stageZ = '';
+      function perch(on) {
+        if (on === perched) return;
+        perched = on;
+        if (on) { stageZ = stage.style.zIndex; stage.style.zIndex = o.guide.onCard === true ? 3 : o.guide.onCard; }
+        else stage.style.zIndex = stageZ;
+      }
+      async function onCard(card, name) {
+        var c = rel(card.getBoundingClientRect()), v = view(), s = scale(), w = al.offsetWidth, h = al.offsetHeight;
+        var right = hidden ? Math.random() < 0.5 : pos.x + w / 2 > (c.l + c.r) / 2;   // the end nearer to him
+        var x = (right ? c.r - 18 * s : c.l + 18 * s) - w / 2, y = c.t - h + 2 * s;
+        if (y < v.t + 6 * s) y = c.b - h - 4 * s;
+        x = Math.max(v.l, Math.min(v.r - w, x));
+        try {
+          if (!hidden) {
+            face(x < pos.x ? 'left' : 'right');
+            await play('dash-ready');
+            ghost(pos.x, pos.y, 'afterimage', 650);
+            await play('flash-out');
+          }
+          perch(true);
+          place(x, y); hide(false); kind = 'stand';
+          face(right ? 'left' : 'right');
+          await play('flash-in');
+          await play('dash-stop');
+          var cc = card.getBoundingClientRect(), me = al.getBoundingClientRect();
+          face((cc.left + cc.right) / 2 < me.left + me.width / 2 ? 'left' : 'right');
+          pose('point');
+          say(projectLine(name), 4200);
+          await sleep(3400);
+          await offCard();
+        } finally { perch(false); }
+      }
+      // flashes off the card he's standing on to the nearest free spot (hides if there's none: the watch
+      // brings him back when there is)
+      async function offCard() {
+        var list = spots('stand', true);
+        list.sort(function (a, b) { return Math.hypot(a.x - pos.x, a.y - pos.y) - Math.hypot(b.x - pos.x, b.y - pos.y); });
+        ghost(pos.x, pos.y, 'afterimage', 650);
+        await play('flash-out');
+        perch(false);
+        if (list.length) { place(list[0].x, list[0].y); face(null); await play('flash-in'); rest(); }
+        else hide(true);
+      }
+      // falling onto a project card (scrolling, onCard): the card right under him, or else (half the time) the
+      // nearest one in view, with room above its top edge to land on
+      function cardBelow() {
+        var v = view(), s = scale(), w = al.offsetWidth, h = al.offsetHeight, cx = pos.x + w / 2, feet = pos.y + h, best = null;
+        [].slice.call(document.querySelectorAll(o.guide.cards)).filter(shown).forEach(function (card) {
+          var c = rel(card.getBoundingClientRect());
+          if (c.t - h < v.t + 4 * s || c.t > v.b - 30 * s) return;   // its top edge on screen, with room for him
+          var dx = cx < c.l + 18 * s ? c.l + 18 * s - cx : cx > c.r - 18 * s ? cx - (c.r - 18 * s) : 0;
+          var cost = dx * 2 + Math.abs(c.t - feet) * 0.5;
+          if (!best || cost < best.cost) best = { card: card, c: c, dx: dx, cost: cost };
+        });
+        if (!best || best.dx > 360 * s || (best.dx > 0 && Math.random() < 0.5)) return null;
+        return best;
+      }
+      // lands on it, gets a shock, says his line about that project, flashes off
+      async function landOnCard(b) {
+        var s = scale(), w = al.offsetWidth, h = al.offsetHeight, c = b.c, cx = pos.x + w / 2;
+        var x = Math.max(c.l + 18 * s, Math.min(c.r - 18 * s, cx)) - w / 2, y = c.t - h + 2 * s;
+        var name = (b.card.querySelector(o.guide.name) || b.card).textContent.trim();
+        guided = b.card; guideAt = performance.now(); guiding = true;
+        try {
+          perch(true);
+          pose(vel > 48 ? 'fall-fast' : 'fall');
+          await drop(x, y);
+          face(x + w / 2 < (c.l + c.r) / 2 ? 'right' : 'left');
+          await play('land');
+          kind = 'stand'; face(null);
+          await play('shocked');
+          var cc = b.card.getBoundingClientRect(), me = al.getBoundingClientRect();
+          face((cc.left + cc.right) / 2 < me.left + me.width / 2 ? 'left' : 'right');
+          pose('point');
+          say(projectLine(name), 4200);
+          await sleep(3400);
+          await offCard();
+        } finally { perch(false); guiding = false; }
+      }
+      async function guide(card, tries) {
+        if (!live || gone || seeking || kind === 'square') return;
+        if (falling || landing || powering || relocating) {
+          // busy for a moment: comes over once he's done, if you're still on the card
+          tries = (tries || 0) + 1;
+          if (tries < 10) setTimeout(function () { if (card.matches(':hover')) guide(card, tries); }, 700);
+          return;
+        }
         if (al.getAttribute('pose') && /^cv-/.test(al.getAttribute('pose'))) return;   // busy reading the CV
         if (performance.now() - guideAt < 1200) return;
-        var t = guideSpot(card);
-        if (!t && hidden) return;
+        var t = guideSpot(card), hop = o.guide.onCard && (!t || t.gap > 180);
+        if (!t && hidden && !hop) return;
         guideAt = performance.now(); guided = card;
         gen++; busy = true; guiding = true; moving = false; kind = 'stand';
         freeze();
         var name = (card.querySelector(o.guide.name) || card).textContent.trim();
         try {
+          if (hop) {
+            await onCard(card, name);
+            guiding = false; busy = false;
+            life(); return;
+          }
           if (t) {
             var far = hidden || Math.hypot(t.x - pos.x, t.y - pos.y) > 170 * scale();
             if (far && TP) {
@@ -1209,6 +1321,12 @@
         falling = false; landing = true; gen++; al.style.translate = '';
         var long = performance.now() - fallT0 > 1300;
         try {
+          var onto = o.guide && o.guide.onCard ? cardBelow() : null;
+          if (onto) {
+            await landOnCard(onto);
+            landing = false; busy = false;
+            life(); return;
+          }
           var w = al.offsetWidth, h = al.offsetHeight, s = scale(), v = view();
           var list = spots('land', true);
           if (!list.length) { await play('fall-warp'); hide(true); landing = false; busy = false; return; }   // the watch brings him back
@@ -1243,19 +1361,31 @@
           life();
         } catch (e) { if (e !== CANCEL) throw e; }
       }
-      var fallN = 0, docH = 0;
+      var fallN = 0, docH = 0, intentUntil = 0;
+      // only scrolling the visitor does counts (wheel, touch, scroll keys, dragging the scrollbar, a nav
+      // link): the page also scrolls by itself when content above changes height (the hero typewriter)
+      function intent() { intentUntil = Date.now() + 700; }
+      if (o.fall) {
+        ['wheel', 'touchmove', 'pointerdown'].forEach(function (t) { window.addEventListener(t, intent, { passive: true, capture: true }); });
+        window.addEventListener('keydown', function (e) {
+          if (/^(PageDown|PageUp|ArrowDown|ArrowUp|Home|End| |Spacebar)$/.test(e.key)) intent();
+        }, true);
+      }
       if (o.fall) window.addEventListener('scroll', function () {
         var y = window.scrollY, d = Math.abs(y - lastY), dh = document.documentElement.scrollHeight;
         lastY = y;
         // the page changing height (content growing near the bottom) shifts the scroll by itself: not him
         var shifted = docH && dh !== docH; docH = dh;
         if (!live || gone || document.hidden || shifted) return;
+        if (Date.now() > intentUntil) return;
+        intentUntil = Math.max(intentUntil, Date.now() + 400);   // smooth / momentum scrolling carries on
         vel = vel * 0.5 + d * 0.5;
         if (!falling) {
-          // a real scroll is a burst of events; small nudges (an arrow key, a trackpad twitch) don't count
+          // a real scroll is a burst of events, or one big jump (a wheel without smooth scrolling, Page
+          // Down, space, the scrollbar); small nudges (an arrow key, a trackpad twitch) don't count
           fallAcc += d; fallN++;
           clearTimeout(accT); accT = setTimeout(function () { fallAcc = fallN = 0; }, 300);
-          if (fallAcc < 60 || fallN < 3) return;
+          if (d < 90 && (fallAcc < 60 || fallN < 3)) return;
           fallAcc = fallN = 0; startFall();
         }
         clearTimeout(fallStop); fallStop = setTimeout(land, 240);
