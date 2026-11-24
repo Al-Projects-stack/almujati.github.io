@@ -41,8 +41,16 @@
                 about that project (name = selector of the card's title); onCard: true (or a z-index): when
                 there's no room near the card he flash-steps onto it, his layer lifted over the page,
       hide:     selector of solid cards he can hide behind for hide and seek (the 'hide' activity),
-      cv:       selector of the CV links: opening the CV makes him read it and stamp it HIRED
+      cv:       selector of the CV links: opening the CV makes him read it and stamp it HIRED,
+      parkour:  { cards, z }: the 'parkour' activity: he jumps onto these cards, sits on a corner swinging his
+                legs, vaults between them and does pull-ups off a bottom edge. z = his layer's z-index while
+                he's up there (a number, or 'card' for one above the card he's on),
+      bugs:     { block, bottom }: type "bugs" for the bug invasion game (block = selector that stops it from
+                starting while it's open, bottom = px at the bottom of the screen the game stays out of)
     });
+
+  He follows the visitor's clock: late at night (22:00 to 06:00) he wears a nightcap, yawns and naps until the
+  mouse moves; in the morning (06:00 to 11:00) he carries a coffee mug; on Fridays he dances.
 
   Click him and he says something about one of the projects (in a speech bubble over his head).
   With a mouse his eyes follow the cursor; whoosh it past him and he ducks; rest it on him and he gets shy.
@@ -80,7 +88,10 @@
     clones: [-80, 80, 12],
     lag: [-14, 14, 2],
     land: [-30, 30, 10],
-    power: [-24, 24, 0]
+    power: [-24, 24, 0],
+    nap: [-14, 30, 14],
+    coffee: [-14, 24, 12],
+    dance: [-24, 24, 8]
   };
   // what he says when clicked: one of these (shuffled, no repeats until all are said) plus the page's own
   var QUIPS = [
@@ -119,6 +130,12 @@
     for (var i = 0; i < PROJECT_LINES.length; i++) if (name.indexOf(PROJECT_LINES[i][0]) >= 0) return pick(PROJECT_LINES[i][1]);
     return 'Ooh, good pick. Click it for the details!';
   }
+  var NAP_LINES = ['I was NOT asleep. I was debugging with my eyes closed.', 'Huh? Who? Is it deployed?', 'Five more minutes...', 'Why are you still up?'];
+  var SIP_LINES = ['Do not talk to me until this kicks in.', 'Coffee first. Code later.', 'Ahh. Now I can see the bugs.'];
+  var DANCE_LINES = ['It\'s Friday!', 'Friday deploys? No. Friday dancing? Yes.', 'Weekend loading...'];
+  var LEDGE_LINES = ['Nice view from up here.', 'Best seat in the portfolio.', 'Don\'t tell the cards I\'m up here.'];
+  var PULL_LINES = ['One more rep!', 'Do you even lift, bro?', 'This card is my gym now.'];
+  var BUG_LINES = ['BUGS! Click them, quick!', 'We have an infestation! Click them!', 'Who shipped this?! Click the bugs!'];
   var FALL_QUIPS = ['AAAAAAAH!', 'Wheeeee!', 'Who turned off gravity?!', 'Scroll slower, I beg you!'];
   var CSS = '.al-say{position:fixed;left:0;top:0;z-index:2147483000;pointer-events:none;box-sizing:border-box;max-width:min(240px,calc(100vw - 16px));' +
     'padding:8px 11px;font:500 12.5px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:#f2ecff;background:#1c1530;border:1px solid #8f6cff;' +
@@ -134,7 +151,12 @@
     '.al-say--cyber{font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;font-size:12px;color:#d6f6ff;background:#060a14;border-color:#00d4ff;' +
     'border-radius:3px;box-shadow:0 0 14px rgba(0,212,255,.35)}' +
     '.al-say--vista{font-family:"Segoe UI",Inter,sans-serif;color:#1b2a3a;background:#f7faff;border-color:#7da2ce;border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.28)}' +
-    'html.al-hover,html.al-hover *{cursor:pointer!important}';
+    'html.al-hover,html.al-hover *{cursor:pointer!important}' +
+    'html.al-bugging,html.al-bugging *{cursor:crosshair!important}' +
+    '.al-hud{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:2147482996;pointer-events:none;white-space:nowrap;padding:5px 12px;' +
+    'font:600 12px/1.4 ui-monospace,"JetBrains Mono",Consolas,monospace;color:#f2ecff;background:#1c1530;border:1px solid #8f6cff;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.4)}' +
+    '.al-hud--cyber{color:#d6f6ff;background:#060a14;border-color:#00d4ff;border-radius:3px;box-shadow:0 0 14px rgba(0,212,255,.35)}' +
+    '.al-hud--vista{font-family:"Segoe UI",Inter,sans-serif;color:#1b2a3a;background:#f7faff;border-color:#7da2ce}';
   var TELEPORT = { glitch: ['glitch-out', 'glitch-in'], minimize: ['minimize', 'restore'] };
 
   window.AlRoam = {
@@ -179,7 +201,7 @@
       function rects(sel, pad, except) {
         if (!sel) return [];
         return [].slice.call(document.querySelectorAll(sel)).filter(function (el) {
-          return el !== except && shown(el);
+          return (typeof except === 'function' ? !except(el) : el !== except) && shown(el);
         }).map(function (el) { return rel(el.getBoundingClientRect(), pad); });
       }
       // content: find what is actually on screen inside these roots (text, images, buttons, anything
@@ -218,7 +240,7 @@
         return auto;
       }
       function scanned(list, pad, except) {
-        return list.filter(function (x) { return x.el !== except; }).map(function (x) { return rel(x.r, pad); });
+        return list.filter(function (x) { return typeof except === 'function' ? !except(x.el) : x.el !== except; }).map(function (x) { return rel(x.r, pad); });
       }
       function avoidRects(pad, except) { return rects(o.avoid, pad, except).concat(scanned(scan().all, pad, except)); }
       function textRects(pad) { return rects(o.text, pad).concat(scanned(scan().text, pad)); }
@@ -305,7 +327,7 @@
         return out.length ? pick(out) : null;
       }
       function covered() {
-        if (kind === 'bonk' || kind === 'square' || kind === 'hide' || perched) return false;   // touching / behind / on things on purpose
+        if (kind === 'bonk' || kind === 'square' || kind === 'hide' || kind === 'cv' || perched) return false;   // touching / behind / on things on purpose
         var b = box(pos.x, pos.y, kind, facing);
         return !inside(b, view()) || hits(b, avoidRects(2));
       }
@@ -314,7 +336,24 @@
         var g = gen;
         return new Promise(function (res, rej) { setTimeout(function () { g === gen ? res() : rej(CANCEL); }, ms); });
       }
-      function pose(p) { al.setAttribute('pose', p); }
+      function pose(p) { al.setAttribute('pose', mugOn && MUGS[p] || p); }
+      // the visitor's clock: nightcap at night, mug in the morning
+      var MUGS = { idle: 'idle-mug', walk: 'walk-mug', 'walk-side': 'walk-side-mug', 'stand-side': 'stand-side-mug' }, mugOn = false;
+      function mood() {
+        var d = new Date(), h = d.getHours();
+        return { night: h >= 22 || h < 6, morning: h >= 6 && h < 11, friday: d.getDay() === 5 };
+      }
+      function dress() {
+        var m = mood(), now = al.getAttribute('pose');
+        al.toggleAttribute('cap', m.night);
+        if (m.morning === mugOn) return;
+        mugOn = m.morning;
+        for (var k in MUGS) {   // swap what he's holding without waiting for his next move
+          if (mugOn && now === k) al.setAttribute('pose', MUGS[k]);
+          if (!mugOn && now === MUGS[k]) al.setAttribute('pose', k);
+        }
+      }
+      dress(); setInterval(dress, 30000);
       function play(p, times) { pose(p); return sleep(dur(p) * (times || 1)); }
       function face(f) { facing = f; if (f === 'left') al.setAttribute('facing', 'left'); else al.removeAttribute('facing'); }
       function place(x, y) { al.style.transition = 'none'; al.style.left = x + 'px'; al.style.top = y + 'px'; pos = { x: x, y: y }; }
@@ -342,6 +381,7 @@
         var g = document.createElement('al-mascot');
         g.setAttribute('pose', p);
         if (facing === 'left') g.setAttribute('facing', 'left');
+        if (al.hasAttribute('cap')) g.setAttribute('cap', '');
         g.style.cssText = 'position:absolute;margin:0;left:' + x + 'px;top:' + y + 'px;width:' + al.offsetWidth + 'px';
         if (!life) g.style.filter = 'drop-shadow(0 0 4px rgba(255,40,170,.45))';
         stage.insertBefore(g, al);
@@ -564,6 +604,11 @@
         cv: async function () {
           if (hidden) return false;
           cvQueued = false; face(null); kind = 'stand';
+          if (covered()) {   // the page moved over him: to a free spot first, so you can see him read it
+            var free = findSpot('stand', true);
+            if (free) { if (TP) await play(TP[0]); place(free.x, free.y); if (TP) await play(TP[1]); }
+          }
+          kind = 'cv';
           await play('cv-out');
           say(pick(['Reading... impressive... very impressive...', 'Hmm. Hmm! HMM!', 'Let me just check this guy out...']), 2400);
           await play('cv-read');
@@ -649,6 +694,114 @@
           rest(); return true;
         },
 
+        // ── the visitor's clock ──
+        // late at night: yawns, sits down, nods off with Zzz until the mouse moves (then jolts awake)
+        nap: async function () {
+          var t = findSpot('nap'); if (!t) return false;
+          await goTo(t, 'nap');
+          rest(); await play('yawn');
+          face(t.facing); await play('nap-in');
+          napWoke = false; napAt = Date.now(); napping = true;
+          try {
+            pose('nap');
+            var until = performance.now() + rnd(16000, 26000);
+            while (!napWoke && performance.now() < until) await sleep(100);
+          } finally { napping = false; }
+          var woke = napWoke; napWoke = false; napped = true;
+          if (woke) { pose('nap-wake'); say(pick(NAP_LINES), 2800); await sleep(dur('nap-wake')); }
+          await play('stand-up');
+          rest(); return true;
+        },
+        // in the morning: stops for a sip of his coffee
+        coffee: async function () {
+          var t = findSpot('coffee'); if (!t) return false;
+          await goTo(t, 'coffee'); rest(); await sleep(rnd(500, 900));
+          sipped = true; face(null);
+          await play('coffee');
+          if (Math.random() < 0.5) say(pick(SIP_LINES), 2600);
+          rest(); await sleep(rnd(700, 1200));
+          await play('coffee');
+          rest(); return true;
+        },
+        // Fridays: a little dance
+        dance: async function () {
+          var t = findSpot('dance'); if (!t) return false;
+          await goTo(t, 'dance'); face(null);
+          danced = true;
+          pose('dance'); say(pick(DANCE_LINES), 2600);
+          await sleep(dur('dance') * ri(3, 4));
+          rest(); return true;
+        },
+
+        // parkour: jumps onto a card, then sits on its corner, vaults to the next one or does pull-ups off
+        // its bottom edge, and jumps back down. If the card moves or goes away he jumps off.
+        parkour: async function () {
+          if (!PK || hidden) return false;
+          var cur = pkPick(pkLedges(), null); if (!cur) return false;
+          var me = {}, s = scale(), seq = ['sit', 'vault', 'hang'].sort(function () { return Math.random() - 0.5; }).slice(0, ri(2, 3));
+          if (seq.indexOf('hang') >= 0) { seq.splice(seq.indexOf('hang'), 1); seq.push('hang'); }   // it ends under the card
+          kind = 'parkour';
+          try {
+            try {
+              var st = pkStand(cur);
+              face(st.x < pos.x ? 'left' : 'right');
+              await play('pk-crouch');
+              perch(true, me, pkZ(cur));
+              pose(Math.random() < 0.4 ? 'pk-flip' : 'pk-air');
+              await arc(st.x, st.y);
+              await play('pk-land');
+              for (var i = 0; i < seq.length; i++) {
+                var fresh = pkLedges().filter(function (l) { return l.card === cur.card; })[0];
+                if (!fresh) break;
+                cur = fresh;
+                if (seq[i] === 'sit' && cur.sits.length) {
+                  var c = pick(cur.sits);
+                  face(c.right ? 'right' : 'left');
+                  pose('pk-air'); await arc(c.x, c.y, 12 * s);
+                  pose('ledge-sit');
+                  if (Math.random() < 0.5) say(pick(LEDGE_LINES), 2600);
+                  await pkHold(cur, rnd(3600, 5600));
+                  var back = pkStand(cur);
+                  pose('pk-air'); await arc(back.x, back.y, 10 * s);
+                  await play('pk-land');
+                } else if (seq[i] === 'vault') {
+                  var next = pkPick(pkLedges(), cur.card, 560 * s);
+                  if (!next) continue;
+                  var to = pkStand(next);
+                  face(to.x < pos.x ? 'left' : 'right');
+                  await play('pk-crouch');
+                  perch(true, me, pkZ(next));
+                  pose(Math.random() < 0.6 ? 'pk-flip' : 'pk-air');
+                  await arc(to.x, to.y);
+                  await play('pk-land');
+                  cur = next;
+                } else if (seq[i] === 'hang' && cur.hang) {
+                  face(null);
+                  pose('pk-flip'); await arc(cur.hang.x, cur.hang.y, 18 * s);
+                  pose('ledge-hang'); await pkHold(cur, 600);
+                  if (Math.random() < 0.6) say(pick(PULL_LINES), 2400);
+                  pose('pullup'); await pkHold(cur, dur('pullup') * ri(3, 5));
+                  pose('ledge-hang'); await pkHold(cur, 450);
+                }
+              }
+            } catch (e) { if (e !== PK_MOVED) throw e; }
+            // back down to the nearest free spot (vanishes if there isn't one: the watch brings him back)
+            var free = spots('stand', true).sort(function (a, b) { return Math.hypot(a.x - pos.x, a.y - pos.y) - Math.hypot(b.x - pos.x, b.y - pos.y); });
+            if (free.length) {
+              var f = free[Math.floor(Math.random() * Math.min(3, free.length))];
+              face(f.x < pos.x ? 'left' : 'right');
+              pose('pk-air'); await arc(f.x, f.y);
+              perch(false, me);
+              await play('pk-land');
+            } else {
+              await play('flash-out');
+              perch(false, me); hide(true);
+              return true;
+            }
+            rest(); return true;
+          } finally { perch(false, me); }
+        },
+
         // ── Vista ──
         uac: async function () {
           var t = findSpot('uac'); if (!t) return false;
@@ -694,6 +847,12 @@
         var b = box(pos.x, pos.y, kind, facing), v = view();
         return { kind: kind, box: b, inView: inside(b, v), hits: avoidRects(2).filter(function (r) { return hits(b, [r]); }) };
       };
+      window.AlRoam.ledges = function () {                                        // cards he can jump on (debugging)
+        return pkLedges().map(function (l) { return { top: Math.round(l.c.t), left: Math.round(l.c.l), stands: l.stands.length, sits: l.sits.length, hang: !!l.hang, clear: l.clear }; });
+      };
+      window.AlRoam.game = function () {                                          // the bug game right now (debugging)
+        return game ? { you: game.you, al: game.al, spawned: game.spawned, total: game.total, bugs: game.bugs.map(function (b) { return { x: b.x, y: b.y, age: performance.now() - b.born }; }) } : null;
+      };
       var names = (o.acts || ['wander', 'pushups', 'pc', 'bonk', 'juggle']).filter(function (n, i, all) { return ACTS[n] && all.indexOf(n) === i; });
       // spWait: when the special has no room, at least one other activity happens before it's tried again
       var sp = o.special && ACTS[o.special.act] ? o.special : null, spDone = false, finished = 0, spWait = 0;
@@ -713,8 +872,23 @@
         var q = window.AlRoam.next; window.AlRoam.next = null;
         if (!ACTS[q] && sp && !spDone && finished >= Math.max(sp.after || 0, spWait) && performance.now() >= (sp.at || 0)) return sp.act;
         if (ACTS[q]) { var k = bag.indexOf(q); if (k >= 0) bag.splice(k, 1); return q; }   // AlRoam.next = 'hack' (testing)
+        var timed = timeAct(); if (timed) return timed;
         if (!bag.length) bag = shuffled();
         return bag.shift();
+      }
+
+      // what the time of day adds to his routine. If there's no room for it, at least one normal activity
+      // happens before it's tried again, so he can never get stuck retrying it
+      var napped = false, sipped = false, danced = false, timeWait = 0;
+      var TIMED = { nap: 1, coffee: 1, dance: 1 };
+      function timeAct() {
+        if (finished < timeWait) return null;
+        var m = mood();
+        if (m.friday && last !== 'dance' && (!danced || Math.random() < 0.22)) return 'dance';
+        // (woken up: stays up for a minute before he can doze off again)
+        if (m.night && last !== 'nap' && Date.now() - lastInput > 2500 && Date.now() - wokeAt > 60000 && (!napped || Math.random() < 0.5)) return 'nap';
+        if (m.morning && last !== 'coffee' && (!sipped || Math.random() < 0.3)) return 'coffee';
+        return null;
       }
 
       async function life(quick) {
@@ -727,9 +901,12 @@
             busy = false; kind = 'stand';
             hist.push(ok ? n : n + '?'); if (hist.length > 60) hist.shift();   // what he did ('?' = no room, retried later)
             if (ok) { last = n; finished++; if (sp && n === sp.act) spDone = true; }
+            else if (TIMED[n]) timeWait = finished + 1;
             else if (sp && n === sp.act) spWait = finished + 1;
             else if (bag.length && names.indexOf(n) >= 0) bag.push(n);   // try it again later this round
             await sleep(ok ? rnd(3000, 5500) : 1500);
+            // late at night he keeps yawning
+            if (ok && !hidden && mood().night && Math.random() < 0.55) { busy = true; rest(); await play('yawn'); rest(); busy = false; await sleep(600); }
             if (o.home && ok && Math.random() < 0.3) {
               var hm = homeSpot(); busy = true; await walkTo(hm.x, hm.y); rest(); busy = false;
               await sleep(rnd(3000, 5000));
@@ -741,7 +918,7 @@
       // pops out (if showing) and back in at a free spot, then carries on; hides if there is none
       var relocating = false;
       async function relocate() {
-        gen++; relocating = true; busy = true;
+        gen++; relocating = true; busy = true; perch(false);
         try {
           kind = 'stand';
           if (!hidden && TP) { face(null); await play(TP[0]); }
@@ -755,7 +932,7 @@
       }
       // back to the resting spot (or a free one) and start over (resize, coming back to the tab)
       function reset() {
-        gen++; busy = false; moving = false; kind = 'stand';
+        gen++; bugsStop(); perch(false); dress(); busy = false; moving = false; kind = 'stand'; napping = false;
         falling = landing = powering = guiding = foundIt = false; seeking = null; clearTimeout(fallStop); al.style.translate = ''; endFx();
         al.removeAttribute('worlds');
         if (!o.home) { if (live) { hide(true); relocate(); } return; }   // before his entrance: leave it to the entrance
@@ -780,11 +957,11 @@
 
       var rt;
       window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(reset, 200); });
-      document.addEventListener('visibilitychange', function () { if (document.hidden) gen++; else reset(); });
+      document.addEventListener('visibilitychange', function () { if (document.hidden) { gen++; bugsStop(); } else reset(); });
       if (o.watch) {
         window.addEventListener('scroll', function () { lastScroll = Date.now(); }, { passive: true });
         setInterval(function () {
-          if (!live || relocating || falling || landing || powering || guiding || document.hidden || moving || Date.now() - lastScroll < 400) { coverHits = 0; return; }
+          if (!live || game || relocating || falling || landing || powering || guiding || document.hidden || moving || Date.now() - lastScroll < 400) { coverHits = 0; return; }
           // covered on two checks running (so a passing tooltip or ripple doesn't send him off)
           if (hidden || (covered() ? ++coverHits >= 2 : (coverHits = 0))) { coverHits = 0; relocate(); }
         }, 700);
@@ -853,6 +1030,20 @@
       // the nudge, once he has made his entrance and can be seen (waits while he is hidden or covered)
       if (o.tip) (function nudge(n) {
         setTimeout(function () { if (!(seen() && say(o.tip, 7000)) && n < 40) nudge(n + 1); }, n ? 2000 : (o.home ? 2500 : (o.delay || 0) + 2600));
+      })(0);
+
+      // says something about the time of day, once per visit, once he can be seen
+      (function hello(n) {
+        setTimeout(function () {
+          if (gone) return;
+          var m = mood(), key = m.friday ? 'friday' : m.night ? 'night' : m.morning ? 'morning' : '';
+          if (!key) return;
+          try { if (sessionStorage.getItem('alHello') === key) return; } catch (e) { }
+          var line = { friday: 'It\'s Friday! I\'ve been waiting all week for this.', night: 'It\'s late. Go to bed, I\'ll guard the portfolio.', morning: 'Morning. Coffee first, then we talk.' }[key];
+          if (!game && seen() && !(bub && bub.classList.contains('on')) && say(line, 4200)) {
+            try { sessionStorage.setItem('alHello', key); } catch (e) { }
+          } else if (n < 25) hello(n + 1);
+        }, n ? 2500 : (o.home ? 2500 : (o.delay || 0) + 3400) + (o.tip ? 8000 : 0));
       })(0);
 
       // clicks pass through him (pointer-events off), so catch the ones that land on his body
@@ -997,7 +1188,7 @@
         };
       }
       async function powerUp() {
-        gen++; busy = true; powering = true; moving = false; relocating = false; kind = 'power';
+        gen++; perch(false); busy = true; powering = true; moving = false; relocating = false; kind = 'power';
         clearTimeout(waveT); al.style.translate = '';
         var r = rel(al.getBoundingClientRect()); place(r.l, r.t);   // stop mid-step
         removeGhosts(); al.removeAttribute('worlds'); face(null);
@@ -1019,6 +1210,7 @@
       }
       var clicks = [];
       document.addEventListener('click', function (e) {
+        if (game) return;
         if (seeking) {
           // found: a click on the bit of him peeking out (a click on the card itself still opens the card)
           // (only a sliver of him shows, so anywhere just beside the card where he is counts)
@@ -1028,6 +1220,7 @@
           return;
         }
         if (!onHim(e.clientX, e.clientY) || (e.target.closest && e.target.closest(CLICKABLE))) return;
+        if (napping) { napWoke = true; wokeAt = Date.now(); return; }   // clicking him wakes him up
         if (o.clickPower && !falling && !landing && !powering) {
           var now = Date.now();
           clicks = clicks.filter(function (t) { return now - t < 1800; }); clicks.push(now);
@@ -1040,14 +1233,26 @@
         face(null); pose('wave'); clearTimeout(waveT);
         waveT = setTimeout(function () { if (!busy) rest(); }, 1600);
       });
+      // any real input: wakes him from a nap, and he won't nod off while you're active
+      var napping = false, napWoke = false, napAt = 0, wokeAt = 0, lastInput = 0, inX = null, inY = null;
+      function stir(e) {
+        if (e.type === 'mousemove') {   // browsers can repeat a mousemove without the mouse moving
+          if (inX !== null && Math.hypot(e.clientX - inX, e.clientY - inY) < 2) return;
+          inX = e.clientX; inY = e.clientY;
+        }
+        lastInput = Date.now();
+        if (napping && Date.now() - napAt > 350) { napWoke = true; wokeAt = Date.now(); }
+      }
+      ['mousemove', 'pointerdown', 'touchstart', 'keydown', 'wheel'].forEach(function (t) { window.addEventListener(t, stir, { passive: true, capture: true }); });
+
       // with a mouse: his eyes follow the cursor; whoosh it past him and he ducks; rest it on him and he
       // gets shy (rubs the back of his head), then waves
       var hov = false, shyT, lastM = null, duckAt = 0;
       // calm moments he can be pulled out of (not mid-fall, power-up, hiding, guiding, the square run,
       // lying on the floor or reading the CV)
       function calm() {
-        return live && !gone && !hidden && !falling && !landing && !powering && !seeking && !guiding && !relocating &&
-          kind !== 'square' && kind !== 'bonk' && !/^cv-/.test(al.getAttribute('pose') || '');
+        return live && !gone && !hidden && !game && !napping && !falling && !landing && !powering && !seeking && !guiding && !relocating &&
+          kind !== 'square' && kind !== 'bonk' && kind !== 'parkour' && !/^cv-/.test(al.getAttribute('pose') || '');
       }
       // stops what he's doing right where he is, plays the poses in turn, then carries on with his day
       function react(list) {
@@ -1112,11 +1317,16 @@
       // no room near the card (onCard): dashes and flash-steps onto the card itself, his layer lifted over
       // the page, stands on its top edge (its bottom edge if the top is off screen), points and talks,
       // then flashes back off to a free spot
-      var perched = false, stageZ = '';
-      function perch(on) {
-        if (on === perched) return;
+      // by: whoever put him up there. A cancelled activity cleaning up late can't pull him off a card that
+      // something newer has put him on
+      var perched = false, stageZ = '', perchBy = null;
+      function perch(on, by, z) {
+        if (!on && by && by !== perchBy) return;
+        perchBy = on ? by || null : null;
+        if (on && z == null) z = o.guide && o.guide.onCard !== true ? o.guide.onCard : 3;
+        if (on === perched) { if (on) stage.style.zIndex = z; return; }
         perched = on;
-        if (on) { stageZ = stage.style.zIndex; stage.style.zIndex = o.guide.onCard === true ? 3 : o.guide.onCard; }
+        if (on) { stageZ = stage.style.zIndex; stage.style.zIndex = z; }
         else stage.style.zIndex = stageZ;
       }
       async function onCard(card, name) {
@@ -1125,6 +1335,7 @@
         var x = (right ? c.r - 18 * s : c.l + 18 * s) - w / 2, y = c.t - h + 2 * s;
         if (y < v.t + 6 * s) y = c.b - h - 4 * s;
         x = Math.max(v.l, Math.min(v.r - w, x));
+        var me = {};
         try {
           if (!hidden) {
             face(x < pos.x ? 'left' : 'right');
@@ -1132,18 +1343,18 @@
             ghost(pos.x, pos.y, 'afterimage', 650);
             await play('flash-out');
           }
-          perch(true);
+          perch(true, me);
           place(x, y); hide(false); kind = 'stand';
           face(right ? 'left' : 'right');
           await play('flash-in');
           await play('dash-stop');
-          var cc = card.getBoundingClientRect(), me = al.getBoundingClientRect();
-          face((cc.left + cc.right) / 2 < me.left + me.width / 2 ? 'left' : 'right');
+          var cc = card.getBoundingClientRect(), at = al.getBoundingClientRect();
+          face((cc.left + cc.right) / 2 < at.left + at.width / 2 ? 'left' : 'right');
           pose('point');
           say(projectLine(name), 4200);
           await sleep(3400);
           await offCard();
-        } finally { perch(false); }
+        } finally { perch(false, me); }
       }
       // flashes off the card he's standing on to the nearest free spot (hides if there's none: the watch
       // brings him back when there is)
@@ -1176,28 +1387,29 @@
         var x = Math.max(c.l + 18 * s, Math.min(c.r - 18 * s, cx)) - w / 2, y = c.t - h + 2 * s;
         var name = (b.card.querySelector(o.guide.name) || b.card).textContent.trim();
         guided = b.card; guideAt = performance.now(); guiding = true;
+        var me = {};
         try {
-          perch(true);
+          perch(true, me);
           pose(vel > 48 ? 'fall-fast' : 'fall');
           await drop(x, y);
           face(x + w / 2 < (c.l + c.r) / 2 ? 'right' : 'left');
           await play('land');
           kind = 'stand'; face(null);
           await play('shocked');
-          var cc = b.card.getBoundingClientRect(), me = al.getBoundingClientRect();
-          face((cc.left + cc.right) / 2 < me.left + me.width / 2 ? 'left' : 'right');
+          var cc = b.card.getBoundingClientRect(), at = al.getBoundingClientRect();
+          face((cc.left + cc.right) / 2 < at.left + at.width / 2 ? 'left' : 'right');
           pose('point');
           say(projectLine(name), 4200);
           await sleep(3400);
           await offCard();
-        } finally { perch(false); guiding = false; }
+        } finally { perch(false, me); guiding = false; }
       }
       async function guide(card, tries) {
-        if (!live || gone || seeking || kind === 'square') return;
-        if (falling || landing || powering || relocating) {
+        if (!live || gone || game) return;
+        if (falling || landing || powering || relocating || seeking || kind === 'square' || al.getAttribute('pose') === 'found') {
           // busy for a moment: comes over once he's done, if you're still on the card
           tries = (tries || 0) + 1;
-          if (tries < 10) setTimeout(function () { if (card.matches(':hover')) guide(card, tries); }, 700);
+          if (tries < 40) setTimeout(function () { if (card.matches(':hover')) guide(card, tries); }, 700);
           return;
         }
         if (al.getAttribute('pose') && /^cv-/.test(al.getAttribute('pose'))) return;   // busy reading the CV
@@ -1205,7 +1417,7 @@
         var t = guideSpot(card), hop = o.guide.onCard && (!t || t.gap > 180);
         if (!t && hidden && !hop) return;
         guideAt = performance.now(); guided = card;
-        gen++; busy = true; guiding = true; moving = false; kind = 'stand';
+        gen++; perch(false); busy = true; guiding = true; moving = false; kind = 'stand';
         freeze();
         var name = (card.querySelector(o.guide.name) || card).textContent.trim();
         try {
@@ -1231,9 +1443,13 @@
         } catch (e) { guiding = false; if (e !== CANCEL) throw e; }
       }
       if (o.guide) {
+        // (a card he landed on by himself still gets the tour when you come to it)
+        var hoverCard = null;
         document.addEventListener('mouseover', function (e) {
-          var card = e.target.closest && e.target.closest(o.guide.cards);
-          if (!card || card === guided) return;
+          var card = (e.target.closest && e.target.closest(o.guide.cards)) || null;
+          if (card === hoverCard) return;   // still on the same one
+          hoverCard = card;
+          if (!card) return;
           clearTimeout(guideT);
           guideT = setTimeout(function () { if (card.matches(':hover')) guide(card); }, 450);
         });
@@ -1262,8 +1478,8 @@
         if (!(e.target.closest && e.target.closest(o.cv)) || gone) return;
         cvQueued = true;
         setTimeout(function () {
-          if (!cvQueued || document.hidden || !live || falling || landing || powering || seeking || relocating) return;
-          gen++; busy = false; moving = false; guiding = false; kind = 'stand';
+          if (!cvQueued || document.hidden || !live || game || falling || landing || powering || seeking || relocating) return;
+          gen++; perch(false); busy = false; moving = false; guiding = false; kind = 'stand';
           freeze();
           if (hidden) relocate(); else life(true);
         }, 150);
@@ -1272,7 +1488,7 @@
       // ── falling while the page scrolls (fixed stage) ──
       var falling = false, landing = false, fallT0 = 0, fallStop, fallAcc = 0, accT, lastY = window.scrollY, vel = 0, fallPose = '', shakeId = 0;
       function startFall() {
-        gen++; endFx(); falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand'; powering = guiding = foundIt = false; seeking = null;
+        gen++; endFx(); perch(false); falling = true; landing = false; busy = true; relocating = false; moving = false; kind = 'stand'; powering = guiding = foundIt = false; seeking = null;
         fallT0 = performance.now();
         al.style.translate = '';
         var r = rel(al.getBoundingClientRect()), v = view(), w = al.offsetWidth, h = al.offsetHeight;
@@ -1376,7 +1592,7 @@
         lastY = y;
         // the page changing height (content growing near the bottom) shifts the scroll by itself: not him
         var shifted = docH && dh !== docH; docH = dh;
-        if (!live || gone || document.hidden || shifted) return;
+        if (!live || gone || game || document.hidden || shifted) return;
         if (Date.now() > intentUntil) return;
         intentUntil = Math.max(intentUntil, Date.now() + 400);   // smooth / momentum scrolling carries on
         vel = vel * 0.5 + d * 0.5;
@@ -1391,10 +1607,268 @@
         clearTimeout(fallStop); fallStop = setTimeout(land, 240);
       }, { passive: true });
 
+      // ── parkour on the cards ──
+      var PK = o.parkour, PK_MOVED = {};
+      // a jump in an arc; chase (optional) gives a moving target
+      function arc(x, y, pop, chase) {
+        var x0 = pos.x, y0 = pos.y, s = scale(), d = Math.hypot(x - x0, y - y0), g0 = gen;
+        var ms = Math.max(chase ? 300 : 360, Math.min(chase ? 560 : 780, 250 + d * (chase ? 0.5 : 0.75)));
+        var rise = pop != null ? pop : Math.min(120 * s, 34 * s + d * 0.2);
+        return new Promise(function (res, rej) {
+          var t0 = performance.now();
+          (function frame(now) {
+            if (gen !== g0) return rej(CANCEL);
+            if (chase) { var t = chase(); if (t) { x = t.x; y = t.y; } }
+            var k = Math.max(0, Math.min(1, (now - t0) / ms));
+            al.style.transition = 'none'; al.style.left = (x0 + (x - x0) * k) + 'px'; al.style.top = (y0 + (y - y0) * k - Math.sin(k * Math.PI) * rise) + 'px';
+            if (k < 1) requestAnimationFrame(frame); else { place(x, y); res(); }
+          })(t0);
+        });
+      }
+      // every card he could get onto right now: really on screen and on top, with room for him.
+      // clear = he wouldn't overlap another card up there (preferred)
+      function pkLedges() {
+        if (!PK) return [];
+        var v = view(), s = scale(), w = al.offsetWidth, h = al.offsetHeight, out = [];
+        var cards = [].slice.call(document.querySelectorAll(PK.cards)).filter(shown);
+        var isCard = function (el) { return cards.some(function (k) { return k === el || k.contains(el); }); };
+        // plain headings count as their actual text, not the full-width block they sit in
+        var rg = document.createRange();
+        var solid = (o.avoid ? [].slice.call(document.querySelectorAll(o.avoid)) : []).filter(function (el) { return shown(el) && !isCard(el); }).map(function (el) {
+          rg.selectNodeContents(el);
+          var t = rg.getBoundingClientRect();
+          var cs = getComputedStyle(el), clipped = cs.webkitBackgroundClip === 'text' || cs.backgroundClip === 'text';   // gradient text
+          return rel(t.width && (clipped || !boxy(cs)) ? t : el.getBoundingClientRect(), 2);
+        }).concat(scanned(scan().all, 2, isCard));
+        cards.forEach(function (card) {
+          var rr = card.getBoundingClientRect(), c = rel(rr);
+          if (c.r - c.l < 84 * s || c.b - c.t < 44 * s) return;
+          var onTop = function (x, y) {
+            if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
+            var el = document.elementFromPoint(x, y); return !!el && (el === card || card.contains(el));
+          };
+          if (!onTop(rr.left + 12, rr.top + 3) || !onTop(rr.left + rr.width / 2, rr.top + 3) || !onTop(rr.right - 12, rr.top + 3)) return;
+          var others = solid.filter(function (r) { return !(r.l <= c.l && r.r >= c.r && r.t <= c.t && r.b >= c.b); });
+          var mates = cards.filter(function (k) { return k !== card && !k.contains(card) && !card.contains(k); }).map(function (k) { return rel(k.getBoundingClientRect(), 2); });
+          var ok = function (b) { return inside(b, v) && !hits(b, others); };
+          var stands = [], sits = [], clear = false;
+          [false, true].forEach(function (right) {
+            var cx = right ? c.r - 26 * s : c.l + 26 * s, y = c.t - h + 2 * s, b = { l: cx - 15 * s, r: cx + 15 * s, t: y + 11 * s, b: c.t - 1 };
+            if (ok(b)) { stands.push({ x: cx - w / 2, y: y }); if (!hits(b, mates)) clear = true; }
+            // on the corner, legs hanging off the end
+            var sx = right ? c.r - 7 * s : c.l + 7 * s, sy = c.t - 49 * s;
+            var sb = right ? { l: sx - 15 * s, r: sx + 27 * s, t: sy + 11 * s, b: sy + 62 * s } : { l: sx - 27 * s, r: sx + 15 * s, t: sy + 11 * s, b: sy + 62 * s };
+            if (ok(sb)) sits.push({ x: sx - w / 2, y: sy, right: right });
+          });
+          if (!stands.length) return;
+          // hanging off the bottom edge (his layer is over the cards, so a card in the next row is fine)
+          var hang = null, hx = c.l + (c.r - c.l) * rnd(0.3, 0.7), hy = c.b - 11 * s, hb = { l: hx - 20 * s, r: hx + 20 * s, t: c.b, b: hy + h };
+          if (ok(hb) && onTop(rr.left + (hx - c.l), rr.bottom - 3)) hang = { x: hx - w / 2, y: hy };
+          out.push({ card: card, c: c, stands: stands, sits: sits, hang: hang, clear: clear });
+        });
+        return out;
+      }
+      // the nearest ledge, with a bit of variety, preferring ones where he doesn't overlap anything
+      function pkPick(list, not, within) {
+        var at = function (l) { var st = pkStand(l); return Math.hypot(st.x - pos.x, st.y - pos.y); };
+        var opts = list.filter(function (l) { return l.card !== not && (!within || at(l) <= within); });
+        opts.sort(function (a, b) { return (a.clear ? 0 : 900) + at(a) - (b.clear ? 0 : 900) - at(b); });
+        return opts.length ? opts[Math.floor(Math.random() * Math.min(3, opts.length))] : null;
+      }
+      function pkStand(l) {   // the end of the card nearer to him
+        return l.stands.slice().sort(function (a, b) { return Math.abs(a.x - pos.x) - Math.abs(b.x - pos.x); })[0];
+      }
+      function pkZ(l) { return PK.z === 'card' ? (parseInt(getComputedStyle(l.card).zIndex, 10) || 0) + 1 : PK.z != null ? PK.z : 3; }
+      // stays put for a while, as long as the card does
+      async function pkHold(l, ms) {
+        var until = performance.now() + ms, r0 = l.card.getBoundingClientRect();
+        while (performance.now() < until) {
+          await sleep(Math.max(10, Math.min(120, until - performance.now())));
+          var r = l.card.getBoundingClientRect();
+          if (!shown(l.card) || !l.card.matches(PK.cards) || Math.abs(r.left - r0.left) > 3 || Math.abs(r.top - r0.top) > 3) throw PK_MOVED;
+        }
+      }
+
+      // ── bug invasion: type "bugs". A swarm crawls over the page; click them. Al leaps on any that have
+      // been around too long. When they're gone he says the score. Esc stops it. ──
+      var game = null, typed = '', typedAt = 0, swallow = -1e9;
+      var BUG = ['.l.l.l.', '.GGGGD.', 'GGgGGDE', '.GGGGD.', '.l.l.l.'], BUG2 = ['l.l.l..', '.GGGGD.', 'GGgGGDE', '.GGGGD.', 'l.l.l..'];
+      var BUGCOL = { G: '#4fbf6a', g: '#2e7d4f', D: '#256b41', E: '#eafff0', l: '#8df0a6' };
+      function isTyping(t) { return !!t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || '') || t.isContentEditable); }
+      if (o.bugs) {
+        window.addEventListener('keydown', function (e) {
+          if (game && e.key === 'Escape') { bugsStop(); hush(); relocate(); return; }
+          if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1 || isTyping(e.target)) { if (e.key !== 'Shift') typed = ''; return; }
+          var now = Date.now();
+          if (now - typedAt > 1500) typed = '';
+          typedAt = now;
+          typed = (typed + e.key.toLowerCase()).slice(-4);
+          // the g of "bugs" must not fire the page's own G shortcut (Cyber opens GitHub on it)
+          if (typed.slice(-3) === 'bug') e.stopImmediatePropagation();
+          if (typed === 'bugs') { typed = ''; e.stopImmediatePropagation(); bugsStart(); }
+        }, true);
+        window.addEventListener('pointerdown', function (e) {
+          if (!game || e.button) return;
+          var b = bugAt(e.clientX, e.clientY); if (!b) return;
+          bugSquash(game, b, 'you');
+          swallow = performance.now();
+          e.preventDefault(); e.stopPropagation();   // a click on a bug doesn't reach what's under it
+        }, true);
+        ['mousedown', 'mouseup', 'click'].forEach(function (t) {
+          window.addEventListener(t, function (e) {
+            if (performance.now() - swallow < 450) { e.preventDefault(); e.stopPropagation(); }
+          }, true);
+        });
+      }
+      function bugAt(x, y) {
+        var best = null, bd = 27;
+        game.bugs.forEach(function (b) { var d = Math.hypot(b.x - x, b.y - y); if (d < bd) { bd = d; best = b; } });
+        return best;
+      }
+      function bugSquash(g, b, who) {
+        var i = g.bugs.indexOf(b); if (i < 0) return;
+        g.bugs.splice(i, 1);
+        if (who === 'you') g.you++; else g.al++;
+        g.splats.push({ x: b.x, y: b.y, t: performance.now(), who: who });
+      }
+      function bugSpawn(g, now) {
+        var W = window.innerWidth, H = window.innerHeight - g.bottom, e = Math.floor(Math.random() * 4), x, y, a;
+        if (e === 0) { x = rnd(20, W - 20); y = -8; a = rnd(0.4, 2.7); }
+        else if (e === 1) { x = W + 8; y = rnd(20, H - 20); a = rnd(2, 4.3); }
+        else if (e === 2) { x = rnd(20, W - 20); y = H + 8; a = rnd(-2.7, -0.4); }
+        else { x = -8; y = rnd(20, H - 20); a = rnd(-1.1, 1.1); }
+        g.bugs.push({ x: x, y: y, a: a, turn: rnd(-1, 1), sp: rnd(60, 125), born: now, step: rnd(0, 9), nextTurn: now + rnd(400, 1100) });
+        g.spawned++;
+      }
+      function bugsFrame(g, now) {
+        if (game !== g) return;
+        var dt = Math.min(0.05, (now - g.last) / 1000), W = window.innerWidth, H = window.innerHeight - g.bottom, c = g.c, K = g.K;
+        g.last = now;
+        while (g.spawned < g.total && now >= g.nextSpawn) { bugSpawn(g, now); g.nextSpawn += rnd(220, 560); }
+        c.clearRect(0, 0, g.cv.width, g.cv.height);
+        g.splats = g.splats.filter(function (q) { return now - q.t < 800; });
+        g.splats.forEach(function (q) {
+          var k = (now - q.t) / 800, r = 2 + k * 5;
+          c.fillStyle = q.who === 'you' ? 'rgba(127,233,255,' + (1 - k).toFixed(2) + ')' : 'rgba(255,209,102,' + (1 - k).toFixed(2) + ')';
+          for (var i = 0; i < 8; i++) c.fillRect(Math.round(q.x / K + Math.cos(i * 0.785) * r), Math.round(q.y / K + Math.sin(i * 0.785) * r), 1, 1);
+          c.fillStyle = 'rgba(79,191,106,' + (0.8 * (1 - k)).toFixed(2) + ')';
+          c.fillRect(Math.round(q.x / K) - 2, Math.round(q.y / K) - 1, 5, 3);
+        });
+        g.bugs.forEach(function (b) {
+          if (now > b.nextTurn) { b.turn = rnd(-1.6, 1.6); b.nextTurn = now + rnd(400, 1200); }
+          b.a += b.turn * dt;
+          b.x += Math.cos(b.a) * b.sp * dt; b.y += Math.sin(b.a) * b.sp * dt; b.step += dt * 12;
+          // they stay on the page
+          if (b.x < 14 && Math.cos(b.a) < 0 || b.x > W - 14 && Math.cos(b.a) > 0) b.a = Math.PI - b.a;
+          if (b.y < 14 && Math.sin(b.a) < 0 || b.y > H - 14 && Math.sin(b.a) > 0) b.a = -b.a;
+          var rows = Math.floor(b.step) % 2 ? BUG2 : BUG, dir = ((Math.round(b.a / (Math.PI / 2)) % 4) + 4) % 4, bx = Math.round(b.x / K), by = Math.round(b.y / K);
+          for (var y = 0; y < 5; y++) for (var x = 0; x < 7; x++) {
+            var col = BUGCOL[rows[y][x]]; if (!col) continue;
+            var u = x - 3, v = y - 2, q = dir === 0 ? [u, v] : dir === 1 ? [-v, u] : dir === 2 ? [-u, -v] : [v, -u];
+            c.fillStyle = col; c.fillRect(bx + q[0], by + q[1], 1, 1);
+          }
+        });
+        var text = 'Bugs left ' + (g.total - g.you - g.al) + '  |  You ' + g.you + '  |  Al ' + g.al + '  |  Esc to stop';
+        if (text !== g.text) { g.text = text; g.hud.textContent = text; }
+        g.raf = requestAnimationFrame(function (t) { bugsFrame(g, t); });
+      }
+      function bugsLine(y, a) {
+        var best = 0, rec = '';
+        try { best = +localStorage.getItem('alBugBest') || 0; if (y > best) { localStorage.setItem('alBugBest', y); if (best) rec = ' New record!'; } } catch (e) { }
+        if (!y) return 'You got 0. I squashed all ' + a + '. Typical.';
+        if (!a) return 'All ' + y + ' bugs were yours! Flawless. You\'re hired.' + rec;
+        return 'You squashed ' + y + ', I got ' + a + '. ' + (y >= a ? 'Nice work, ship it!' : 'I\'ll take the promotion.') + rec;
+      }
+      function bugsStart() {
+        if (game || !live || gone || document.hidden) return;
+        if (o.bugs.block && document.querySelector(o.bugs.block)) return;
+        // whatever he was doing stops
+        gen++; endFx(); perch(false); clearTimeout(fallStop); clearTimeout(waveT); clearTimeout(shyT);
+        falling = landing = powering = guiding = relocating = foundIt = napping = moving = false; seeking = null;
+        busy = true; kind = 'stand'; al.style.translate = '';
+        removeGhosts(); al.removeAttribute('worlds');
+        var K = 3, bottom = o.bugs.bottom || 0, W = window.innerWidth, H = window.innerHeight;
+        var cv = document.createElement('canvas'); cv.width = Math.ceil(W / K); cv.height = Math.ceil(H / K); cv.setAttribute('aria-hidden', 'true');
+        cv.style.cssText = 'position:fixed;left:0;top:0;width:' + cv.width * K + 'px;height:' + cv.height * K + 'px;z-index:2147482985;pointer-events:none;image-rendering:pixelated';
+        var hud = document.createElement('div'); hud.className = 'al-hud al-hud--' + (o.bubble || 'plain'); hud.setAttribute('aria-hidden', 'true');
+        var front = document.createElement('div'); front.setAttribute('aria-hidden', 'true');
+        front.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;z-index:2147482995;pointer-events:none';
+        document.body.appendChild(cv); document.body.appendChild(hud); document.body.appendChild(front);
+        document.documentElement.classList.add('al-bugging');
+        // he comes up in front of everything for the game (viewport coordinates on this layer)
+        var w = al.offsetWidth, h = al.offsetHeight, r = al.getBoundingClientRect();
+        var x = hidden ? (W - w) / 2 : Math.max(4, Math.min(W - w - 4, r.left)), y = hidden ? H - h - bottom - 12 : Math.max(4, Math.min(H - h - bottom - 4, r.top));
+        var was = hidden;
+        front.appendChild(al); place(x, y); hide(false); face(null);
+        var now = performance.now();
+        game = { cv: cv, c: cv.getContext('2d'), K: K, hud: hud, front: front, bottom: bottom, bugs: [], splats: [], spawned: 0, total: 24, you: 0, al: 0, last: now, t0: now, nextSpawn: now + 450, text: '' };
+        var g = game;
+        g.raf = requestAnimationFrame(function (t) { g.last = t; g.nextSpawn = t + 450; g.t0 = t; bugsFrame(g, t); });
+        bugsHunt(g, was);
+      }
+      async function bugsHunt(g, was) {
+        try {
+          if (was) await play((TP || TELEPORT.glitch)[1]);
+          say(pick(BUG_LINES), 2400);
+          await play('shocked');
+          rest();
+          var s = scale(), w = al.offsetWidth, h = al.offsetHeight, started = performance.now();
+          var spotFor = function (b) {
+            return { x: Math.max(4, Math.min(window.innerWidth - w - 4, b.x - w / 2)), y: Math.max(4, Math.min(window.innerHeight - h - g.bottom - 2, b.y - h * 0.96)) };
+          };
+          while (game === g && (g.spawned < g.total || g.bugs.length) && performance.now() - started < 60000) {
+            var now = performance.now(), prey = null;
+            g.bugs.forEach(function (b) { if (now - b.born > 3400 && (!prey || b.born < prey.born)) prey = b; });
+            if (!prey) {
+              // watches the nearest one
+              var near = null, nd = 1e9, cx = pos.x + w / 2;
+              g.bugs.forEach(function (b) { var d = Math.hypot(b.x - cx, b.y - pos.y - h); if (d < nd) { nd = d; near = b; } });
+              if (near) { var f = near.x < cx ? 'left' : 'right'; if (facing !== f || !/^stand-side/.test(al.getAttribute('pose'))) { face(f); pose('stand-side'); } }
+              await sleep(140);
+              continue;
+            }
+            var t = spotFor(prey), target = prey;
+            face(t.x < pos.x ? 'left' : 'right');
+            pose('pk-air');
+            await arc(t.x, t.y, Math.min(70 * s, 22 * s + Math.hypot(t.x - pos.x, t.y - pos.y) * 0.14), function () {
+              return g.bugs.indexOf(target) >= 0 ? spotFor(target) : null;
+            });
+            if (game !== g) return;
+            var fx = pos.x + w / 2, fy = pos.y + h * 0.96;
+            g.bugs.slice().forEach(function (b) { if (b === target || Math.hypot(b.x - fx, b.y - fy) < 30 * s) bugSquash(g, b, 'al'); });
+            await play('pk-stomp');
+            rest();
+            await sleep(rnd(240, 460));
+          }
+          if (game !== g) return;
+          // the result, in front of everything, then back to his day
+          var line = bugsLine(g.you, g.al), won = g.you >= g.al;
+          g.hud.textContent = 'You ' + g.you + '  |  Al ' + g.al;
+          face(null); pose(won ? 'cheer' : 'wave');
+          say(line, 5600);
+          await sleep(3400);
+          if (game !== g) return;
+          bugsStop();
+          relocate();
+        } catch (e) { if (e !== CANCEL) throw e; }
+      }
+      // takes the game down and puts him back on his stage at the same spot on screen
+      function bugsStop() {
+        var g = game; if (!g) return;
+        game = null;
+        cancelAnimationFrame(g.raf);
+        g.cv.remove(); g.hud.remove();
+        document.documentElement.classList.remove('al-bugging');
+        var r = al.getBoundingClientRect();
+        stage.appendChild(al);
+        var q = rel(r); place(q.l, q.t);
+        g.front.remove();
+      }
+
       return {
         // stop whatever he's doing right where he is and play an exit pose (e.g. on the way to another page)
         leave: function (p) {
-          gen++; busy = true; relocating = true; moving = false; gone = true;
+          gen++; bugsStop(); perch(false); busy = true; relocating = true; moving = false; gone = true;
           falling = landing = false; clearTimeout(fallStop); al.style.translate = ''; hush(); endFx();
           var r = rel(al.getBoundingClientRect());
           place(r.l, r.t); face(null); al.removeAttribute('worlds');

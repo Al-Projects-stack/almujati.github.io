@@ -17,12 +17,15 @@
                     fall-in* | fall | fall-fast | fall-warp* | land* | crash* |
                     power-up* | powered | power-down*
             any:    point (side) | peek (side) | found* | shocked* | cv-out* | cv-read* | cv-stamp* | cv-show* | duck* | shy*
+            time:   nap-in* | nap | nap-wake* | coffee* | idle-mug | walk-mug | walk-side-mug | stand-side-mug | dance
+            ledges: pk-crouch* | pk-air | pk-flip | pk-land* | pk-stomp* | ledge-sit | ledge-hang | pullup
     .look(dir)  'l' | 'r' | 'u' | null: his eyes (and head, a pixel) turn that way in front-facing poses
             Vista:  minimize* | restore* | uac* | uac-click* | facepalm* | sit-down* | update-wait |
                     doze | update-done* | stand-up* | bsod* | solitaire*
             (* plays once and holds the last frame; side poses face right)
     worlds  (boolean) shows the Cyber hexagon + Vista orb in the cheer / present poses
     facing  "left" mirrors him
+    cap     (boolean) wears a nightcap in every pose
 
   Size: set a width on the element (default 120px); height follows at 56:74. The drawing overhangs
   that box sideways (push-ups, the desk, dropped worlds) without affecting layout.
@@ -72,6 +75,8 @@
   var GLINT = { 4: 'EwwGFFwwGE' };
   var LOOKS = { l: { 4: 'EwGGFFwGGE' }, r: { 4: 'EGGwFFGGwE' }, u: { 4: 'EGwGFFGwGE', 5: 'ESggSSggSE' } };
   var LOOK = null;   // set by the element while it renders (where the cursor is)
+  var CAP = false;   // same: is he wearing the nightcap
+  var MIRROR = false;   // same: is he facing left (the whole canvas flips, so letters are drawn backwards to read right)
   var NOGLASS = { 3: '.HSSSSSSH.', 4: 'ESmSSSSmSE', 5: 'ESsSSSSsSE' };
   var GLASSES_FRONT = ['FFF..FFF', 'GwGFFGwG', '.gg..gg.'];
 
@@ -93,6 +98,23 @@
   var SIDE_GLINT = { 4: '.HHHHFFFwwG.' };
   var SIDE_NOGLASS = { 3: '.HHHHHSSSSS.', 4: '.HHHSSSSSmS.', 5: '.HHHESSSSSSS' };
   var GLASSES_SIDE = ['...FFF', 'FFFGwG', '....gg'];
+
+  // nightcap: white band over the top of his hair, blue cone flopping over to one side, white pom-pom
+  var NIGHTCAP = [
+    '....AAAAAa.......',
+    '...AAWWAAAAAa....',
+    '..AAAAAAWWAAAa...',
+    '.aAAWWAAAAAA.Aa..',
+    '.aAAAAAAWWA...Aa.',
+    'WWWWWWWWWWWW..PPP',
+    'wwwwwwwwwwww..PPP',
+    '..............PPP'
+  ];
+  var NIGHTCAP_L = NIGHTCAP.map(function (r) { return r.split('').reverse().join(''); });
+  var CAPCOL = { A: '#4a66e0', a: '#2f429f', W: '#f0ecff', w: '#c9c4e0', P: '#fbf8ff' };
+  var MUG = ['.ccccc..', 'MMMMMMHH', 'MMMMMM.H', 'MMMMMM.H', 'MMMMMMHH', 'mMMMMm..'];
+  var MUGCOL = { c: '#5b3a22', M: '#f2ece0', m: '#cfc7b6', H: '#e2dccf' };
+  var NOTE = ['.###', '.#.#', '.#..', '##..', '##..'];
 
   var HEX = ['.CCC.', 'C...C', 'C.c.C', 'C...C', '.CCC.'];
   var ORB = ['.VVV.', 'VuVVV', 'VVVVV', 'VVVvV', '.VVV.'];
@@ -196,6 +218,18 @@
   // superhero landing: back knee and one hand on the floor, far arm swept back
   var HERO = { legs: [[60, -60, -40], [-5, -90, 180]], lean: 62, hands: [[34, 69], null], arms: [0, [-80, -60]] };
   function hero(extra) { return sd(ext(HERO, extra)); }
+
+  // hanging from a ledge: arm angles that keep his hand on the bar (at x 28, y 11) while his shoulder has
+  // risen n px, the elbow bending outward
+  function grip(n) {
+    var sx = 26, sy = 30 - n, tx = 28, ty = 11, A = 9, B = 10, full = Math.hypot(tx - sx, ty - sy), d = Math.min(A + B - 0.1, full);
+    var ux = (tx - sx) / full, uy = (ty - sy) / full;
+    var a = (A * A - B * B + d * d) / (2 * d), h = Math.sqrt(Math.max(0, A * A - a * a));
+    var ex = sx + ux * a - uy * h, ey = sy + uy * a + ux * h;
+    if (ex < sx) { ex = sx + ux * a + uy * h; ey = sy + uy * a - ux * h; }
+    return [Math.atan2(ex - sx, ey - sy) / DEG, Math.atan2(tx - ex, ty - ey) / DEG, 8];
+  }
+  function hang(n, extra) { var g = grip(n); return ext({ hop: n, l: g, r: g, noFloor: true }, extra); }
 
   var POSES = {
     idle: [{ dur: 2600 }, { dur: 140, glint: true }],
@@ -739,7 +773,94 @@
       { dur: 300, happy: true }
     ])
   };
+  // ════ time of day ════
+  function noUpd(f) { var c = ext(f, {}); delete c.upd; return c; }
+  // night: sits down, nods off with Zzz, jolts awake when you move the mouse
+  POSES['nap-in'] = POSES['sit-down'].map(noUpd);
+  POSES.nap = range(12, function (i) { return seat({ dur: 180, lean: i % 6 < 3 ? 15 : 20, arms: [20, 10], zzz: i }); });
+  POSES['nap-wake'] = [
+    seat({ dur: 110, lean: -16, arms: [[150, 170], [140, 165]], bang: [17, 26] }),
+    seat({ dur: 200, lean: -8, arms: [[125, 145], [115, 140]], bang: [17, 27] }),
+    seat({ dur: 260, lean: -2, arms: [[60, 80], [50, 70]], bang: [17, 27] }),
+    seat({ dur: 420, lean: 0, arms: [[40, 195], 30], glint: true }),
+    seat({ dur: 220, lean: 0, arms: [40, 30] })
+  ];
+  // morning: carries a steaming mug around, stops for a sip
+  var HOLD_MUG = [12, 60, 7];
+  POSES['idle-mug'] = [
+    { dur: 500, r: HOLD_MUG, mug: 0 }, { dur: 500, r: HOLD_MUG, mug: 1 }, { dur: 500, r: HOLD_MUG, mug: 2 },
+    { dur: 500, r: HOLD_MUG, mug: 3 }, { dur: 140, r: HOLD_MUG, mug: 3, glint: true }
+  ];
+  POSES['walk-mug'] = POSES.walk.map(function (f, i) { return ext(f, { r: HOLD_MUG, mug: i % 4 }); });
+  POSES['walk-side-mug'] = range(8, function (i) { return { dur: 80, side: true, ph: i, arms: [[16, 76], -0.9 * STEP[(i + 4) % 8][0]], mug: i % 4 }; });
+  POSES['stand-side-mug'] = range(4, function (i) { return sd({ dur: 520, legs: STAND, arms: [[16, 76], -2], mug: i, glint: i === 3 }); });
+  POSES.coffee = [
+    { dur: 420, r: HOLD_MUG, mug: 0 },
+    { dur: 130, r: [45, -30, 7], mug: 1 },
+    { dur: 130, r: [80, -90, 8], mugAt: [21, 26], mug: 2 },
+    { dur: 1000, r: [100, -112, 8], mugAt: [19, 22], mug: 3 },
+    { dur: 150, r: [80, -90, 8], mugAt: [21, 26], mug: 0 },
+    { dur: 220, r: HOLD_MUG, mug: 1, happy: true },
+    { dur: 700, r: HOLD_MUG, mug: 2, happy: true, glint: true },
+    { dur: 200, r: HOLD_MUG, mug: 3 }
+  ];
+  // Fridays: arms pump side to side, hips sway, then he raises the roof
+  POSES.dance = range(16, function (i) {
+    var b = i % 4, f = { dur: 130, happy: true, sway: i < 8 ? [-2, -1, 2, 1][b] : 0, notes: i, hop: b % 2 };
+    if (i < 8) {
+      var left = b < 2;
+      f.l = left ? [130, 165, 8] : [38, -30, 7];
+      f.r = left ? [38, -30, 7] : [130, 165, 8];
+      f.lift = left ? [2, 0] : [0, 2];
+    } else {
+      var up = b % 2 === 0;
+      f.l = up ? [155, 172, 8] : [120, 150, 8];
+      f.r = up ? [155, 172, 8] : [120, 150, 8];
+      f.hop = up ? 2 : 0;
+      f.lift = i % 8 < 4 ? [1, 0] : [0, 1];
+    }
+    return f;
+  });
+
+  // ════ parkour on the cards ════
+  var AIR_TUCK = { oy: 0, glow: [99, 0], legs: [[70, -60, -20], [42, -72, -20]], lean: -4 };
+  POSES['pk-crouch'] = [
+    sd({ dur: 90, legs: STAND, lean: 6, arms: [15, -15] }),
+    sd({ dur: 170, legs: [[52, -42, 0], [46, -46, 0]], lean: 24, arms: [[-52, -32], [-62, -42]] })
+  ];
+  POSES['pk-air'] = [
+    sd(ext(AIR_TUCK, { dur: 110, arms: [[150, 172], [138, 160]] })),
+    sd(ext(AIR_TUCK, { dur: 110, arms: [[140, 165], [150, 172]], legs: [[62, -50, -15], [50, -70, -20]] }))
+  ];
+  POSES['pk-flip'] = range(8, function (i) {
+    return sd({ dur: 60, oy: 0, legs: [[86, -92, -20], [80, -96, -20]], arms: [[60, 20], [50, 10]], rot: { a: -45 * i, ps: [19.5, 42], pd: [19.5, 42] }, glow: [99, 0] });
+  });
+  POSES['pk-land'] = [
+    sd({ dur: 70, legs: [[62, -52, 0], [56, -56, 0]], lean: 28, arms: [[40, 60], [-40, -20]], dust: 1 }),
+    sd({ dur: 130, legs: [[50, -40, 0], [44, -44, 0]], lean: 20, arms: [[30, 50], [-30, -15]], dust: 2 }),
+    sd({ dur: 130, legs: [[22, -5, 0], [-18, -10, 0]], lean: 8, arms: [20, -10], dust: 3 }),
+    sd({ dur: 150, legs: STAND, arms: [2, -2] })
+  ];
+  // a quick stomp (the bug game)
+  POSES['pk-stomp'] = [
+    hero({ dur: 60, impact: 1 }),
+    hero({ dur: 90, impact: 2 }),
+    hero({ dur: 150, impact: 3 }),
+    sd({ dur: 110, legs: [[22, -5, 0], [-18, -10, 0]], lean: 8, arms: [20, -10] })
+  ];
+  // sitting on the corner of a card, legs swinging off the end
+  POSES['ledge-sit'] = range(8, function (i) {
+    var sw = [14, 24, 14, -2, -14, -22, -14, -2][i];
+    return sd({ dur: 150, oy: 0, legs: [[84, sw, 6], [80, -sw * 0.8, 6]], lean: 4, hands: [[28, 50], [26, 50]], glow: [99, 0], glint: i === 6 });
+  });
+  // hanging off the bottom edge of a card, then pull-ups
+  POSES['ledge-hang'] = [hang(0, { dur: 300, lift: [1, 0] }), hang(0, { dur: 300, lift: [0, 1] })];
+  POSES.pullup = [0, 3, 7, 11, 14, 14, 11, 7, 3, 0].map(function (n, i) {
+    return hang(n, { dur: i === 4 || i === 5 ? 170 : i === 0 || i === 9 ? 150 : 80, lift: n > 7 ? [2, 2] : [1, 1], shock: n > 3 && n < 14, happy: n === 14 });
+  });
+
   var ONCE = {
+    'nap-in': 1, 'nap-wake': 1, coffee: 1, 'pk-crouch': 1, 'pk-land': 1, 'pk-stomp': 1,
     conjure: 1, unconjure: 1, 'pc-start': 1, 'pc-stretch': 1, 'pushup-in': 1, 'pushup-out': 1,
     bonk: 1, getup: 1, 'glasses-on': 1, 'juggle-in': 1, fumble: 1, scoop: 1, yawn: 1,
     'glitch-out': 1, 'glitch-in': 1, 'holo-in': 1, hack: 1, 'holo-grant': 1, 'holo-out': 1, 'bug-in': 1, stomp: 1,
@@ -923,6 +1044,22 @@
   function drawTick(p) { [[24, 61], [25, 62], [26, 61], [27, 60], [28, 59]].forEach(function (q) { p.px(q[0], q[1], '#7fdb8a'); }); }
   function drawBang(p, b) { p.rect(b[0], b[1], b[0] + 1, b[1] + 4, '#ffd166'); p.rect(b[0], b[1] + 6, b[0] + 1, b[1] + 7, '#ffd166'); }
 
+  function drawMug(p, x, y, k) {
+    x = Math.round(x); y = Math.round(y);
+    p.map(MUG, x, y, MUGCOL);
+    [[1, 0], [4, 2]].forEach(function (q, i) {   // steam
+      var t = (k + i * 2) % 4, sx = x + q[0] + (t % 2), sy = y - 2 - t;
+      p.px(sx, sy, 'rgba(230,240,255,0.7)'); p.px(sx, sy - 1, 'rgba(230,240,255,0.32)');
+    });
+  }
+  // music notes drifting up beside him
+  function drawNotes(p, k) {
+    [[-2, 0, '#ffd166'], [36, 8, '#7fe9ff']].forEach(function (n) {
+      var t = (k * 2 + n[1]) % 16, y = 28 - t, x = n[0] + (t % 8 < 4 ? 0 : 1);
+      p.map(NOTE, x, y, { '#': t > 12 ? n[2] + '88' : n[2] });
+    });
+  }
+
   function drawBoard(p, b) {
     var y = 72 - b.lift, deck = b.fade ? 'rgba(42,51,70,0.5)' : '#2a3346';
     p.rect(5, y, 33, y, deck); p.px(34, y - 1, deck); p.px(4, y - 1, deck);
@@ -986,7 +1123,8 @@
   function drawZzz(p, i) {
     for (var n = 0; n < 2; n++) {
       var t = ((i + n * 6) % 12) / 12, big = t > 0.5 ? 1 : 0;
-      p.map(ZZ[big], Math.round(16 - 8 * t), Math.round(32 - 16 * t), { '#': t > 0.8 ? 'rgba(230,240,255,0.5)' : '#e6f0ff' });
+      var rows = MIRROR ? ZZ[big].map(function (r) { return r.split('').reverse().join(''); }) : ZZ[big];
+      p.map(rows, Math.round(16 - 8 * t), Math.round(32 - 16 * t), { '#': t > 0.8 ? 'rgba(230,240,255,0.5)' : '#e6f0ff' });
     }
   }
 
@@ -1167,6 +1305,7 @@
     if (f.fixed) drawTick(p);
     if (f.bang) drawBang(p, f.bang);
     if (f.zzz != null) drawZzz(p, f.zzz);
+    if (f.notes != null) drawNotes(p, f.notes);
     if (f.deck != null) drawDeck(p, f.deck);
     if (f.cards != null) drawCascade(p, f.cards);
   }
@@ -1241,6 +1380,7 @@
     p.stroke(19.5, 31, ex, ey, 3, col);
     p.stroke(ex, ey, wx, wy, 3, col);
     p.stroke(wx, wy, wx + Math.sin(v * DEG) * 2, wy + Math.cos(v * DEG) * 2, 3, hand);
+    return [wx + Math.sin(v * DEG) * 2, wy + Math.cos(v * DEG) * 2];
   }
   // arm from shoulder to a planted hand; bends at the elbow (toward the back) when the reach is short
   function reach(p, sx, sy, hx, hy, col, hand) {
@@ -1288,7 +1428,11 @@
     if (f.noglass) for (r in SIDE_NOGLASS) head[r] = SIDE_NOGLASS[r];
     else if (f.glint) for (r in SIDE_GLINT) head[r] = SIDE_GLINT[r];
     p.map(head, 14, 16, C);
-    if (!skipNear) arm(p, arms[0], C.J, C.S);
+    if (CAP) p.map(NIGHTCAP_L, 9, 11, CAPCOL);   // the tail flops behind him
+    if (!skipNear) {
+      var hd = arm(p, arms[0], C.J, C.S);
+      if (f.mug != null) drawMug(p, hd[0] - 2, hd[1] - 6, f.mug);
+    }
   }
   // upright body: far arm behind the legs, then legs, torso/head, near arm in front
   function sideBody(p, f, oy) {
@@ -1346,6 +1490,7 @@
     if (f.side) return drawSide(ctx, f);
     var p = new Painter(ctx);
     ctx.clearRect(0, 0, W, H);
+    p.ox = XO + (f.sway || 0);
     var hop = f.hop || 0, dy = f.dy || 0, lift = f.lift || [0, 0], c = f.crouch || 0;
     var arms = { l: f.l || HANG, r: f.r || HANG }, balls = f.balls, hands = {};
 
@@ -1363,7 +1508,7 @@
       arms.l = [12, thrown ? 140 : 115, 6]; arms.r = [12, caught ? 100 : 118, 6];
     }
 
-    p.rect(14, 72, 25, 72, 'rgba(0,212,255,0.16)'); p.rect(16, 73, 23, 73, 'rgba(0,212,255,0.08)');
+    if (!f.noFloor) { p.rect(14, 72, 25, 72, 'rgba(0,212,255,0.16)'); p.rect(16, 73, 23, 73, 'rgba(0,212,255,0.08)'); }
     propsBack(ctx, f);
     if (f.poof) poof(p, f.poof[0], f.poof[1]);
     p.oy = -hop;
@@ -1413,6 +1558,7 @@
     }
     p.map(head, 15 + lx, 16 + ly, C);
     if (f.spiky) drawSpikes(p, f.spiky);
+    else if (CAP) p.map(NIGHTCAP, 14 + lx, 11 + ly, CAPCOL);
 
     // arms (drawn last so raised arms sit in front)
     [['l', 13, -1], ['r', 26, 1]].forEach(function (A) {
@@ -1431,6 +1577,10 @@
         ball(p, spot === 'tip' ? hx + side * Math.sin(r2) * 5 : hx, spot === 'tip' ? hy + Math.cos(r2) * 5 : hy - 6, side < 0 ? 'h' : 'o');
       }
     });
+    if (f.mug != null) {
+      if (f.mugAt) drawMug(p, f.mugAt[0], f.mugAt[1], f.mug);
+      else drawMug(p, hands.r[0] - 2, hands.r[1] - p.oy - 6, f.mug);
+    }
     if (f.held) p.map(GLASSES_FRONT, 16, 22, C);
     if (f.floatGlasses) p.map(GLASSES_FRONT, 16, 19 - f.floatGlasses, C);   // lifting off his face
     p.oy = 0;
@@ -1450,7 +1600,7 @@
   AlMascot.prototype = Object.create(HTMLElement.prototype);
   AlMascot.prototype.constructor = AlMascot;
   Object.setPrototypeOf(AlMascot, HTMLElement);
-  AlMascot.observedAttributes = ['pose', 'worlds'];
+  AlMascot.observedAttributes = ['pose', 'worlds', 'cap'];
   AlMascot.dur = function (pose) {
     return (POSES[pose] || []).reduce(function (t, f) { return t + f.dur; }, 0);
   };
@@ -1467,15 +1617,24 @@
     this._start();
   };
   AlMascot.prototype.disconnectedCallback = function () { clearTimeout(this._t); };
-  AlMascot.prototype.attributeChangedCallback = function () { if (this._ctx) this._start(); };
+  AlMascot.prototype.attributeChangedCallback = function (name) {
+    if (!this._ctx) return;
+    if (name === 'cap' && this._f) {   // no need to restart the pose
+      LOOK = this._look || null; CAP = this.hasAttribute('cap');
+      render(this._ctx, this._f, this.hasAttribute('worlds'));
+      LOOK = null; CAP = false;
+      return;
+    }
+    this._start();
+  };
   AlMascot.prototype._start = function () {
     clearTimeout(this._t);
     var name = this.getAttribute('pose'), frames = POSES[name] || POSES.idle, self = this, i = 0;
     var worlds = this.hasAttribute('worlds'), once = ONCE[name];
     (function tick() {
-      self._f = frames[i]; LOOK = self._look || null;
+      self._f = frames[i]; LOOK = self._look || null; CAP = self.hasAttribute('cap'); MIRROR = self.getAttribute('facing') === 'left';
       render(self._ctx, frames[i], worlds);
-      LOOK = null;
+      LOOK = null; CAP = false; MIRROR = false;
       if (reduceMotion || frames.length < 2 || (once && i === frames.length - 1)) return;
       self._t = setTimeout(function () { i = (i + 1) % frames.length; tick(); }, frames[i].dur);
     })();
@@ -1487,7 +1646,9 @@
     if (this._look === d) return;
     this._look = d;
     if (this._ctx && this._f && !this._f.side) {
-      LOOK = d; render(this._ctx, this._f, this.hasAttribute('worlds')); LOOK = null;
+      LOOK = d; CAP = this.hasAttribute('cap');
+      render(this._ctx, this._f, this.hasAttribute('worlds'));
+      LOOK = null; CAP = false;
     }
   };
 

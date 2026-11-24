@@ -1364,8 +1364,8 @@ if(e.clientY<70&&e.clientX>80&&e.clientX<360)showSwitchBtn(2500);
 });
 </script>
 <!-- Pixel Al: lives on the desktop above the wallpaper, under icons and windows -->
-<script src="../assets/al-mascot.js?v=20"></script>
-<script src="../assets/al-roam.js?v=20"></script>
+<script src="../assets/al-mascot.js?v=21"></script>
+<script src="../assets/al-roam.js?v=21"></script>
 <script>
 (function(){
 if(!window.AlRoam||!window.customElements)return;
@@ -1401,10 +1401,12 @@ stage:document.getElementById('desktop'),z:2,teleport:'minimize',watch:true,dela
 avoid:'.desk-icon,.window.active:not(.minimized),#sidebar,#taskbar,#startMenu.open,#switchThemeBtn,#ctxMenu,#binCtx,.tray-popup.open,#calBalloon,#balloonBox>*',
 text:'.desk-icon,#taskbar',
 bump:'.window.active:not(.minimized)',
-acts:['wander','pushups','bonk','juggle','uac','update','bsod','solitaire','hide'],
+acts:['wander','pushups','bonk','juggle','uac','update','bsod','solitaire','hide','parkour'],
 bubble:'vista',quips:quips,
 // hover a project in the Projects window: he points at it and talks about it; hide and seek behind open windows
-guide:{cards:'#projectsBody .proj-item',name:'.proj-name'},hide:'.window.active:not(.minimized)'
+guide:{cards:'#projectsBody .proj-item',name:'.proj-name'},hide:'.window.active:not(.minimized)',
+// parkour on the open windows; type "bugs" for the bug invasion
+parkour:{cards:'.window.active:not(.minimized):not(.maximized)',z:'card'},bugs:{block:'#bsod.open,#uac.open',bottom:44}
 });
 }
 new MutationObserver(go).observe(document.body,{attributes:true,attributeFilter:['class']});

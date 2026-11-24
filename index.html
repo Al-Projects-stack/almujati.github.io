@@ -191,8 +191,8 @@ body{overflow-y:auto;align-items:flex-start}
 <a class="switch-link fade" href="#" onclick="localStorage.removeItem('portfolioTheme');return false">Clear saved preference</a>
 <div class="footer fade">Al Mujati © 2026</div>
 </div>
-<script src="assets/al-mascot.js?v=20"></script>
-<script src="assets/al-roam.js?v=20"></script>
+<script src="assets/al-mascot.js?v=21"></script>
+<script src="assets/al-roam.js?v=21"></script>
 <script>
 (function(){
 var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');
@@ -253,7 +253,8 @@ roaming=true;
 var phone=window.matchMedia('(max-width:660px)'),cards=document.querySelector('.cards');
 roamer=AlRoam.start(al,{home:slot,avoid:'h1,.sub,.card,.switch-link,.footer',text:'h1,.sub,.switch-link,.footer',bump:[cyberCard,vistaCard],worlds:[cyberCard,vistaCard],
 floor:true,bounds:function(){if(!phone.matches)return null;var c=cards.getBoundingClientRect(),s=slot.getBoundingClientRect();return{left:c.left,right:c.right,top:s.top-34,bottom:s.bottom}},
-acts:phone.matches?['wander','pushups','pc','juggle']:null,
+acts:phone.matches?['wander','pushups','pc','juggle']:['wander','pushups','pc','bonk','juggle','parkour'],
+parkour:phone.matches?null:{cards:'.card',z:12},bugs:phone.matches?null:{},
 quips:['Cyber or Vista? Same projects, different vibes. Pick one!','Two worlds, one dev. I\'m the tour guide.'],
 tip:phone.matches?'Psst... this whole thing is way better on a laptop. Just saying.':null});
 }

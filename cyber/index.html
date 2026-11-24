@@ -2429,8 +2429,8 @@
     }
   </script>
   <!-- Pixel Al: lives in the free space beside the content, never over it -->
-  <script src="../assets/al-mascot.js?v=20"></script>
-  <script src="../assets/al-roam.js?v=20"></script>
+  <script src="../assets/al-mascot.js?v=21"></script>
+  <script src="../assets/al-roam.js?v=21"></script>
   <script>
     (function () {
       if (!window.AlRoam || !window.customElements) return;
@@ -2463,12 +2463,14 @@
           // hover a project card: he points at it and talks about it; hide and seek behind the solid cards;
           // opening the CV: he reads it and stamps it HIRED
           guide: { cards: '.proj-card', name: 'h3, h4', onCard: true }, hide: '.proj-card, .panel, .proj-slideshow, .avail-panel', cv: '#cv-btn, .cv-dl',
+          // parkour on the cards; type "bugs" for the bug invasion
+          parkour: { cards: '.proj-card, .panel, .proj-slideshow, .avail-panel', z: 3 }, bugs: { block: '#proj-modal:not([hidden])' },
           // scan .container for real content so he can use the open space inside sections;
           // the hero heading (typewriter word grows) and the photo box count as whole blocks
           content: '.container',
           avoid: '.hero h1, .profile-box, #nav-sticky, #switchThemeBtn, .floating-tag, #scroll-top, .kb-hint, #toast, #proj-modal',
           bump: '.panel, .proj-slideshow, .profile-box, .avail-panel, .proj-card',
-          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'hide'],
+          acts: ['wander', 'pushups', 'pc', 'bonk', 'juggle', 'hack', 'bug', 'hover', 'glitch', 'flash', 'clones', 'lag', 'hide', 'parkour'],
           // once per visit, after two activities and 6s on the page: runs on the spinning square behind the photo
           spinner: '.avatar-wrap', special: { act: 'square', after: 2, at: 6000 }
         });
